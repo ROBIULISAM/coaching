@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoachPro - Cloud Sync Dashboard</title>
+    <title>CoachPro - Management Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Firebase Core and Database SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -103,7 +100,7 @@
         .receipt-table th, .receipt-table td { padding: 0.65rem; border: 1px solid #cbd5e1; }
         .receipt-summary { text-align: right; font-weight: 700; font-size: 1rem; }
         .log-title { font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; text-transform: uppercase; }
-        .cloud-badge { background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .secure-badge { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
     </style>
 </head>
 <body>
@@ -119,7 +116,7 @@
         <header>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <h1>Management Dashboard</h1>
-                <span class="cloud-badge"><i class="fa-solid fa-cloud"></i> Dual Sync System Active</span>
+                <span class="secure-badge"><i class="fa-solid fa-shield-halved"></i> Secure Local Storage Engine Active</span>
             </div>
             <p id="currentDateStr" style="color: var(--text-muted); font-weight: 500;"></p>
         </header>
@@ -181,7 +178,7 @@
                         <label for="payAmount">Cash Amount to Collect (BDT) *</label>
                         <input type="number" id="payAmount" placeholder="e.g. 1000" min="1" required>
                     </div>
-                    <button type="submit" class="btn btn-success" style="width:100%"><i class="fa-solid fa-money-check-dollar"></i> Apply Deduction & Sync Cloud</button>
+                    <button type="submit" class="btn btn-success" style="width:100%"><i class="fa-solid fa-money-check-dollar"></i> Apply Deduction & Save</button>
                 </form>
             </div>
 
@@ -214,7 +211,7 @@
                         <input type="tel" id="studentPhone" placeholder="01XXXXXXXXX">
                     </div>
                     <div style="display:flex; gap: 0.5rem;">
-                        <button type="submit" class="btn" id="submitBtn" style="flex:1;"><i class="fa-solid fa-cloud-arrow-up"></i> Save to Cloud</button>
+                        <button type="submit" class="btn" id="submitBtn" style="flex:1;"><i class="fa-solid fa-floppy-disk"></i> Save Student</button>
                         <button type="button" class="btn btn-danger" id="cancelEditBtn" style="display:none;" onclick="resetForm()">Cancel</button>
                     </div>
                 </form>
@@ -228,7 +225,7 @@
             <div id="receiptPrintArea">
                 <div class="receipt-header">
                     <h3>CoachPro Academy</h3>
-                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top:0.25rem;">Cloud Sync Payment Invoice</p>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top:0.25rem;">Payment Invoice</p>
                 </div>
                 <div class="receipt-info">
                     <div>
@@ -256,65 +253,22 @@
     </div>
 
     <script>
-        // নিরাপদ এবং ব্লক-প্রুফ ক্লাউড নোড প্রোফাইল
-        const firebaseConfig = {
-            databaseURL: "https://coachpro-robiul-default-rtdb.firebaseio.com/"
-        };
-        
-        let db;
         let students = [];
         const monthsArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const classesArray = ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'];
 
         document.getElementById('currentDateStr').innerText = new Date().toDateString();
 
-        // ফায়ারবেস ইনিশিয়ালাইজেশন ব্যাকআপ হ্যান্ডলার সহ
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            db = firebase.database().ref("coaching_records");
-            
-            // ক্লাউড ডেটাবেজ লিসেনার
-            db.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    let keys = Object.keys(data);
-                    students = Object.values(data);
-                    students.forEach((s, idx) => { s._fbKey = keys[idx]; });
-                } else {
-                    students = [];
-                }
-                localStorage.setItem('coachpro_backup', JSON.stringify(students));
-                renderApp();
-            }, (error) => {
-                console.log("Cloud read restricted, switching to local backup model.");
-                loadLocalBackup();
-            });
-        } catch(e) {
-            console.log("Firebase block detected. Running standalone mode.");
-            loadLocalBackup();
-        }
-
-        function loadLocalBackup() {
-            const localData = localStorage.getItem('coachpro_backup');
-            students = localData ? JSON.parse(localData) : [];
+        // লোকাল মেমোরি থেকে ডেটা লোড করা
+        function loadData() {
+            const data = localStorage.getItem('coachpro_standalone_db');
+            students = data ? JSON.parse(data) : [];
             renderApp();
         }
 
-        function syncData(key, action, dataObj) {
-            if (db) {
-                if (action === 'push') {
-                    db.push(dataObj);
-                } else if (action === 'update') {
-                    db.child(key).update(dataObj);
-                } else if (action === 'remove') {
-                    db.child(key).remove();
-                }
-            } else {
-                localStorage.setItem('coachpro_backup', JSON.stringify(students));
-                renderApp();
-            }
+        function saveData() {
+            localStorage.setItem('coachpro_standalone_db', JSON.stringify(students));
+            renderApp();
         }
 
         function handleFormSubmit(event) {
@@ -331,26 +285,14 @@
                     directPaid: 0, paymentLogs: [], payments: {}
                 };
                 monthsArray.forEach(m => { newStudent.payments[m] = 'due'; });
-                
-                if(!db) {
-                    students.push(newStudent);
-                    syncData(null, 'local', null);
-                } else {
-                    syncData(null, 'push', newStudent);
-                }
+                students.push(newStudent);
             } else {
-                const student = students[index];
-                student.name = name;
-                student.class = studentClass;
-                student.fee = fee;
-                student.phone = phone;
-                
-                if(student._fbKey) {
-                    syncData(student._fbKey, 'update', { name, class: studentClass, fee, phone });
-                } else {
-                    syncData(null, 'local', null);
-                }
+                students[index].name = name;
+                students[index].class = studentClass;
+                students[index].fee = fee;
+                students[index].phone = phone;
             }
+            saveData();
             resetForm();
         }
 
@@ -368,14 +310,7 @@
             student.paymentLogs.push({ date: timestamp, amount: amountInput });
             student.directPaid = (student.directPaid || 0) + amountInput;
             
-            if(student._fbKey) {
-                db.child(student._fbKey).update({
-                    directPaid: student.directPaid,
-                    paymentLogs: student.paymentLogs
-                });
-            } else {
-                syncData(null, 'local', null);
-            }
+            saveData();
             document.getElementById('quickPayForm').reset();
         }
 
@@ -386,22 +321,13 @@
             let nextStatus = currentStatus === 'due' ? 'paid' : (currentStatus === 'paid' ? 'na' : 'due');
             
             student.payments[month] = nextStatus;
-            if(student._fbKey) {
-                db.child(student._fbKey + "/payments").update({ [month]: nextStatus });
-            } else {
-                syncData(null, 'local', null);
-            }
+            saveData();
         }
 
         function deleteStudent(index) {
             if(confirm("Are you sure you want to delete this student record?")) {
-                let student = students[index];
-                if(student._fbKey) {
-                    syncData(student._fbKey, 'remove', null);
-                } else {
-                    students.splice(index, 1);
-                    syncData(null, 'local', null);
-                }
+                students.splice(index, 1);
+                saveData();
             }
         }
 
@@ -412,8 +338,8 @@
             document.getElementById('studentClass').value = student.class;
             document.getElementById('monthlyFee').value = student.fee;
             document.getElementById('studentPhone').value = student.phone === 'N/A' ? '' : student.phone;
-            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-pen"></i> Edit Cloud Profile`;
-            document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Update Cloud`;
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-pen"></i> Edit Student Profile`;
+            document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Update Student`;
             document.getElementById('cancelEditBtn').style.display = "inline-flex";
         }
 
@@ -421,7 +347,7 @@
             document.getElementById('studentForm').reset();
             document.getElementById('studentIndex').value = "";
             document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-plus"></i> 2. Student Registration Form`;
-            document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save to Cloud`;
+            document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Student`;
             document.getElementById('cancelEditBtn').style.display = "none";
         }
 
@@ -560,6 +486,9 @@
             printWindow.document.close();
             printWindow.print();
         }
+
+        // অ্যাপ চালু করার সময় রান হবে
+        loadData();
     </script>
 </body>
 </html>
