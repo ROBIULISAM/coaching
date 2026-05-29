@@ -118,7 +118,7 @@
         <header>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <h1>Management Dashboard</h1>
-                <span class="cloud-badge"><i class="fa-solid fa-cloud"></i> Real-time Cloud Active</span>
+                <span class="cloud-badge"><i class="fa-solid fa-cloud"></i> Cloud Database Enabled</span>
             </div>
             <p id="currentDateStr" style="color: var(--text-muted); font-weight: 500;"></p>
         </header>
@@ -255,10 +255,9 @@
     </div>
 
     <script>
-        // ======= ⚠️ ক্রুশিয়াল ফায়ারবেস কনফিগারেশন ওপেন রুলস সহ =======
-        // এই ফ্রি ডাটাবেজটি সরাসরি একটি পাবলিক টেস্ট নোডেড ডাটাবেজ হিসেবে কনফিগার করা হয়েছে যাতে আপনার কোনো অ্যাকাউন্ট খোলা ছাড়া এখনই কাজ করে।
+        // ======= 🚀 UPDATED DATABASE CONFIG (OPEN FOR ALL DEVICES) =======
         const firebaseConfig = {
-            databaseURL: "https://coachpro-open-db-default-rtdb.firebaseio.com/"
+            databaseURL: "https://coachpro-robiul-default-rtdb.firebaseio.com/"
         };
         
         firebase.initializeApp(firebaseConfig);
@@ -270,11 +269,9 @@
 
         document.getElementById('currentDateStr').innerText = new Date().toDateString();
 
-        // ☁️ ক্লাউড ডাটাবেজ থেকে রিয়েল-টাইমে ডাটা রিড করা (অটো সিঙ্ক)
         db.on('value', (snapshot) => {
             const data = snapshot.val();
             students = data ? Object.values(data) : [];
-            // ইন্টারনাল কি ডিস্ট্রিবিউশন
             if(data) {
                 let keys = Object.keys(data);
                 students.forEach((s, idx) => { s._fbKey = keys[idx]; });
@@ -296,7 +293,7 @@
                     directPaid: 0, paymentLogs: [], payments: {}
                 };
                 monthsArray.forEach(m => { newStudent.payments[m] = 'due'; });
-                db.push(newStudent); // ক্লাউডে ডাটা পুশ
+                db.push(newStudent);
             } else {
                 const key = students[index]._fbKey;
                 db.child(key).update({ name, class: studentClass, fee, phone });
@@ -327,7 +324,7 @@
 
         function togglePayment(studentIndex, month) {
             let student = students[studentIndex];
-            let currentStatus = student.payments[month] || 'due';
+            let currentStatus = student.payments ? (student.payments[month] || 'due') : 'due';
             let nextStatus = currentStatus === 'due' ? 'paid' : (currentStatus === 'paid' ? 'na' : 'due');
             
             db.child(student._fbKey + "/payments").update({ [month]: nextStatus });
@@ -453,47 +450,4 @@
             });
 
             document.getElementById('totalStudentsCount').innerText = overallStudents;
-            document.getElementById('totalEarnings').innerText = overallEarnings + " BDT";
-            document.getElementById('totalDue').innerText = overallDue + " BDT";
-        }
-
-        function viewReceipt(index) {
-            const student = students[index];
-            document.getElementById('rName').innerText = student.name;
-            document.getElementById('rClass').innerText = student.class;
-            document.getElementById('rPhone').innerText = student.phone;
-            document.getElementById('rPrintDate').innerText = new Date().toLocaleDateString('en-GB');
-
-            let totalGeneratedFee = 0;
-            monthsArray.forEach(month => {
-                let status = student.payments ? (student.payments[month] || 'due') : 'due';
-                if (status === 'due' || status === 'paid') { totalGeneratedFee += student.fee; }
-            });
-
-            let directPaid = student.directPaid || 0;
-            document.getElementById('rTotalGenerated').innerText = totalGeneratedFee;
-            document.getElementById('rDirectPaid').innerText = directPaid;
-            document.getElementById('rTotalDue').innerText = Math.max(0, totalGeneratedFee - directPaid);
-
-            const logsTbody = document.getElementById('paymentLogsTableBody');
-            logsTbody.innerHTML = '';
-            if(student.paymentLogs) {
-                student.paymentLogs.forEach(log => {
-                    logsTbody.innerHTML += `<tr><td>${log.date}</td><td>+ ${log.amount} BDT</td></tr>`;
-                });
-            } else {
-                logsTbody.innerHTML = `<tr><td colspan="2">No logs found.</td></tr>`;
-            }
-            document.getElementById('receiptModal').style.display = 'flex';
-        }
-        function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
-        function printReceipt() {
-            const printContent = document.getElementById('receiptPrintArea').innerHTML;
-            const printWindow = window.open('', '', 'height=600,width=800');
-            printWindow.document.write('<html><head><title>Receipt</title></head><body>' + printContent + '</body></html>');
-            printWindow.document.close();
-            printWindow.print();
-        }
-    </script>
-</body>
-</html>
+            document.getElementById('totalEarnings').innerText = overallEarnings
