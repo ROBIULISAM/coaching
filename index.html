@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CoachPro - Cloud Sync Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Firebase Core and Database SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -118,7 +119,7 @@
         <header>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <h1>Management Dashboard</h1>
-                <span class="cloud-badge"><i class="fa-solid fa-cloud"></i> Cloud Database Enabled</span>
+                <span class="cloud-badge"><i class="fa-solid fa-cloud"></i> Dual Sync System Active</span>
             </div>
             <p id="currentDateStr" style="color: var(--text-muted); font-weight: 500;"></p>
         </header>
@@ -255,29 +256,66 @@
     </div>
 
     <script>
-        // ======= 🚀 UPDATED DATABASE CONFIG (OPEN FOR ALL DEVICES) =======
+        // নিরাপদ এবং ব্লক-প্রুফ ক্লাউড নোড প্রোফাইল
         const firebaseConfig = {
             databaseURL: "https://coachpro-robiul-default-rtdb.firebaseio.com/"
         };
         
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref("coaching_records");
-
+        let db;
         let students = [];
         const monthsArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const classesArray = ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'];
 
         document.getElementById('currentDateStr').innerText = new Date().toDateString();
 
-        db.on('value', (snapshot) => {
-            const data = snapshot.val();
-            students = data ? Object.values(data) : [];
-            if(data) {
-                let keys = Object.keys(data);
-                students.forEach((s, idx) => { s._fbKey = keys[idx]; });
+        // ফায়ারবেস ইনিশিয়ালাইজেশন ব্যাকআপ হ্যান্ডলার সহ
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
             }
+            db = firebase.database().ref("coaching_records");
+            
+            // ক্লাউড ডেটাবেজ লিসেনার
+            db.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    let keys = Object.keys(data);
+                    students = Object.values(data);
+                    students.forEach((s, idx) => { s._fbKey = keys[idx]; });
+                } else {
+                    students = [];
+                }
+                localStorage.setItem('coachpro_backup', JSON.stringify(students));
+                renderApp();
+            }, (error) => {
+                console.log("Cloud read restricted, switching to local backup model.");
+                loadLocalBackup();
+            });
+        } catch(e) {
+            console.log("Firebase block detected. Running standalone mode.");
+            loadLocalBackup();
+        }
+
+        function loadLocalBackup() {
+            const localData = localStorage.getItem('coachpro_backup');
+            students = localData ? JSON.parse(localData) : [];
             renderApp();
-        });
+        }
+
+        function syncData(key, action, dataObj) {
+            if (db) {
+                if (action === 'push') {
+                    db.push(dataObj);
+                } else if (action === 'update') {
+                    db.child(key).update(dataObj);
+                } else if (action === 'remove') {
+                    db.child(key).remove();
+                }
+            } else {
+                localStorage.setItem('coachpro_backup', JSON.stringify(students));
+                renderApp();
+            }
+        }
 
         function handleFormSubmit(event) {
             event.preventDefault();
@@ -293,10 +331,25 @@
                     directPaid: 0, paymentLogs: [], payments: {}
                 };
                 monthsArray.forEach(m => { newStudent.payments[m] = 'due'; });
-                db.push(newStudent);
+                
+                if(!db) {
+                    students.push(newStudent);
+                    syncData(null, 'local', null);
+                } else {
+                    syncData(null, 'push', newStudent);
+                }
             } else {
-                const key = students[index]._fbKey;
-                db.child(key).update({ name, class: studentClass, fee, phone });
+                const student = students[index];
+                student.name = name;
+                student.class = studentClass;
+                student.fee = fee;
+                student.phone = phone;
+                
+                if(student._fbKey) {
+                    syncData(student._fbKey, 'update', { name, class: studentClass, fee, phone });
+                } else {
+                    syncData(null, 'local', null);
+                }
             }
             resetForm();
         }
@@ -315,24 +368,40 @@
             student.paymentLogs.push({ date: timestamp, amount: amountInput });
             student.directPaid = (student.directPaid || 0) + amountInput;
             
-            db.child(student._fbKey).update({
-                directPaid: student.directPaid,
-                paymentLogs: student.paymentLogs
-            });
+            if(student._fbKey) {
+                db.child(student._fbKey).update({
+                    directPaid: student.directPaid,
+                    paymentLogs: student.paymentLogs
+                });
+            } else {
+                syncData(null, 'local', null);
+            }
             document.getElementById('quickPayForm').reset();
         }
 
         function togglePayment(studentIndex, month) {
             let student = students[studentIndex];
-            let currentStatus = student.payments ? (student.payments[month] || 'due') : 'due';
+            if (!student.payments) student.payments = {};
+            let currentStatus = student.payments[month] || 'due';
             let nextStatus = currentStatus === 'due' ? 'paid' : (currentStatus === 'paid' ? 'na' : 'due');
             
-            db.child(student._fbKey + "/payments").update({ [month]: nextStatus });
+            student.payments[month] = nextStatus;
+            if(student._fbKey) {
+                db.child(student._fbKey + "/payments").update({ [month]: nextStatus });
+            } else {
+                syncData(null, 'local', null);
+            }
         }
 
         function deleteStudent(index) {
-            if(confirm("Are you sure you want to delete this record from cloud?")) {
-                db.child(students[index]._fbKey).remove();
+            if(confirm("Are you sure you want to delete this student record?")) {
+                let student = students[index];
+                if(student._fbKey) {
+                    syncData(student._fbKey, 'remove', null);
+                } else {
+                    students.splice(index, 1);
+                    syncData(null, 'local', null);
+                }
             }
         }
 
@@ -450,4 +519,47 @@
             });
 
             document.getElementById('totalStudentsCount').innerText = overallStudents;
-            document.getElementById('totalEarnings').innerText = overallEarnings
+            document.getElementById('totalEarnings').innerText = overallEarnings + " BDT";
+            document.getElementById('totalDue').innerText = overallDue + " BDT";
+        }
+
+        function viewReceipt(index) {
+            const student = students[index];
+            document.getElementById('rName').innerText = student.name;
+            document.getElementById('rClass').innerText = student.class;
+            document.getElementById('rPhone').innerText = student.phone;
+            document.getElementById('rPrintDate').innerText = new Date().toLocaleDateString('en-GB');
+
+            let totalGeneratedFee = 0;
+            monthsArray.forEach(month => {
+                let status = student.payments ? (student.payments[month] || 'due') : 'due';
+                if (status === 'due' || status === 'paid') { totalGeneratedFee += student.fee; }
+            });
+
+            let directPaid = student.directPaid || 0;
+            document.getElementById('rTotalGenerated').innerText = totalGeneratedFee;
+            document.getElementById('rDirectPaid').innerText = directPaid;
+            document.getElementById('rTotalDue').innerText = Math.max(0, totalGeneratedFee - directPaid);
+
+            const logsTbody = document.getElementById('paymentLogsTableBody');
+            logsTbody.innerHTML = '';
+            if(student.paymentLogs) {
+                student.paymentLogs.forEach(log => {
+                    logsTbody.innerHTML += `<tr><td>${log.date}</td><td>+ ${log.amount} BDT</td></tr>`;
+                });
+            } else {
+                logsTbody.innerHTML = `<tr><td colspan="2">No logs found.</td></tr>`;
+            }
+            document.getElementById('receiptModal').style.display = 'flex';
+        }
+        function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
+        function printReceipt() {
+            const printContent = document.getElementById('receiptPrintArea').innerHTML;
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Receipt</title></head><body>' + printContent + '</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>
