@@ -223,7 +223,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0
 
 <div class="content">
 
-  <!-- DASHBOARD -->
   <div id="s-dashboard" class="screen on">
     <div id="sync-msg" class="sync-banner" style="display:none"></div>
     <div class="stat-grid">
@@ -253,7 +252,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0
     <div class="card"><div class="card-body" id="dash-recent" style="padding:4px 0"></div></div>
   </div>
 
-  <!-- STUDENTS -->
   <div id="s-students" class="screen">
     <div class="search-wrap">
       <i class="ti ti-search"></i>
@@ -270,7 +268,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0
     <div id="student-list"></div>
   </div>
 
-  <!-- PAYMENTS -->
   <div id="s-payment" class="screen">
     <div class="sec"><i class="ti ti-cash"></i> Collect payment</div>
     <div class="card card-body">
@@ -301,7 +298,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0
     <div id="pay-hist"></div>
   </div>
 
-  <!-- REGISTER -->
   <div id="s-register" class="screen">
     <div class="sec" id="reg-title"><i class="ti ti-user-plus"></i> New student registration</div>
     <div class="card card-body">
@@ -342,7 +338,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0
 
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button class="bnb on" onclick="goScreen('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
   <button class="bnb" onclick="goScreen('students',this)"><i class="ti ti-users"></i> Students</button>
@@ -350,7 +345,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0
   <button class="bnb" onclick="goScreen('register',this)"><i class="ti ti-user-plus"></i> Register</button>
 </div>
 
-<!-- LEDGER MODAL -->
 <div class="modal-backdrop" id="modal-bd" onclick="closeMod(event)">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -362,7 +356,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"><i class="ti ti-check-circle"></i><span id="tmsg"></span></div>
 
 <script>
@@ -393,14 +386,12 @@ async function fetchCloud(){
   } catch(e){
     setSyncStatus(false,'Offline');
     showSyncMsg('Cloud sync failed — data may be outdated','error');
-    // fallback: try localStorage
     const local = localStorage.getItem('cp_s_bak');
     if(local) SS = JSON.parse(local);
   }
   rDash(); rStudents(); rPayHist(); rPaySel();
 }
 
-// backup to localStorage on each fetch
 function backupLocal(){ try{localStorage.setItem('cp_s_bak',JSON.stringify(SS))}catch(e){} }
 
 function showSyncMsg(msg, type=''){
@@ -423,14 +414,30 @@ function fmt(n){return '৳'+Math.round(n).toLocaleString()}
 function fdate(ts){return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
 function ftime(ts){return new Date(ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}
 
-// Fee calc: months since joining × monthly fee
-function mDiff(jd){
-  const d=new Date(jd), now=new Date();
-  return Math.max(1,(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth())+1);
+// ─── NEW TOGGLE-BASED MATH LOGIC (টগলের ওপর নির্ভর করে হিসাব) ───
+function getStudentStats(s) {
+  const fee = parseFloat(s.fee || 0);
+  const payments = s.payments || {};
+  let paidMonths = 0;
+  let dueMonths = 0;
+
+  MONTHS.forEach(m => {
+    const st = payments[m] || 'due'; // ডিফল্ট লাল (due) থাকবে
+    if (st === 'paid') paidMonths++;
+    if (st === 'due') dueMonths++;
+  });
+
+  const paid = paidMonths * fee;
+  const due = dueMonths * fee;
+  const gen = paid + due;
+  
+  return { paid, due, gen };
 }
-function sGen(s){ return mDiff(s.joined_date||s.jd||new Date().toISOString().slice(0,10)) * parseFloat(s.fee||0); }
-function sPaid(s){ return parseFloat(s.direct_paid||0); }
-function sDue(s){ return Math.max(0, sGen(s) - sPaid(s)); }
+
+// পুরোনো টাইম বেসড ফাংশনগুলোকে ওভাররাইড করা হলো
+function sGen(s){ return getStudentStats(s).gen; }
+function sPaid(s){ return getStudentStats(s).paid; }
+function sDue(s){ return getStudentStats(s).due; }
 
 // ─── NAVIGATION ────────────────────────────────────────
 function goScreen(name,btn){
@@ -463,7 +470,6 @@ function rDash(){
   });
   if(!any) ck.innerHTML='<p style="font-size:13px;color:var(--text2)">No students enrolled yet</p>';
 
-  // Recent payments from payment_logs
   const rp=document.getElementById('dash-recent');
   let recent=[];
   SS.forEach(s=>{
@@ -490,16 +496,17 @@ function rStudents(){
   if(sq) list=list.filter(s=>s.name.toLowerCase().includes(sq)||(s.phone||'').includes(sq));
   if(!list.length){el.innerHTML=`<div class="empty"><i class="ti ti-users"></i><div class="empty-txt">No students found</div></div>`;return;}
   el.innerHTML=list.map(s=>{
-    const due=sDue(s),paid=sPaid(s),gen=sGen(s);
-    const pct=gen>0?Math.round(Math.min(100,paid/gen*100)):100;
+    const due=sDue(s), paid=sPaid(s), gen=sGen(s);
+    const pct=gen>0?Math.round((paid/gen)*100):0;
     const barCls=due>0?'bad':'ok';
-    // months grid
+    
     const payments=s.payments||{};
     const monthsHtml=MONTHS.map(m=>{
       const st=payments[m]||'due';
       const cls=st==='paid'?'month-paid':(st==='na'?'month-na':'month-due');
       return `<button class="month-btn ${cls}" onclick="toggleMonth(${s.id},'${m}')">${m}</button>`;
     }).join('');
+    
     return `<div class="card" style="margin-bottom:10px">
       <div class="card-row" style="align-items:flex-start">
         <div class="av" style="margin-top:2px">${ini(s.name)}</div>
@@ -541,7 +548,7 @@ async function toggleMonth(dbId, month){
     await _sb.from('coaching_students').update({payments:updated}).eq('id',dbId);
     s.payments=updated;
     rStudents(); rDash();
-    toast(month+' → '+next);
+    toast(month+' → '+next.toUpperCase());
   }catch(e){toast('Update failed')}
 }
 
@@ -559,8 +566,8 @@ async function delS(id){
 // ─── LEDGER MODAL ──────────────────────────────────────
 function openLedger(id){
   const s=SS.find(x=>x.id===id); if(!s)return;
-  const gen=sGen(s),paid=sPaid(s),due=sDue(s);
-  const pct=gen>0?Math.round(Math.min(100,paid/gen*100)):100;
+  const gen=sGen(s), paid=sPaid(s), due=sDue(s);
+  const pct=gen>0?Math.round((paid/gen)*100):0;
   const logs=s.payment_logs||[];
   document.getElementById('modal-title').textContent=s.name;
   document.getElementById('modal-body').innerHTML=`
@@ -626,110 +633,102 @@ function pSel(id){
   document.getElementById('pay-info').style.display='block';
 }
 
+function qPay(id){
+  goScreen('payment', document.querySelectorAll('.bnb')[2]);
+  document.getElementById('ps').value = id;
+  pSel(id);
+}
+
 async function doPayment(){
-  const sid=document.getElementById('ps').value;
-  const amt=parseFloat(document.getElementById('pa').value);
-  const note=document.getElementById('pn').value.trim();
-  if(!sid){alert('Please select a student');return}
-  if(!amt||amt<=0){alert('Enter a valid amount');return}
-  const s=SS.find(x=>x.id==sid); if(!s)return;
-  const now=new Date();
-  const timestamp=now.toLocaleDateString('en-GB')+' '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  const logs=Array.isArray(s.payment_logs)?s.payment_logs:[];
-  logs.push({date:timestamp,amount:amt,note:note||'Payment'});
-  const newPaid=parseFloat(s.direct_paid||0)+amt;
+  const id=document.getElementById('ps').value;
+  const amt=parseFloat(document.getElementById('pa').value)||0;
+  const note=document.getElementById('pn').value||'Fee Payment';
+  if(!id || amt<=0) return toast('Select student & valid amount');
+  const s=SS.find(x=>x.id==id); if(!s) return;
+  
+  const logs=s.payment_logs||[];
+  logs.push({date:new Date().toISOString().slice(0,10), amount:amt, note:note});
+  
   try{
-    await _sb.from('coaching_students').update({payment_logs:logs,direct_paid:newPaid}).eq('id',sid);
-    s.payment_logs=logs; s.direct_paid=newPaid;
+    await _sb.from('coaching_students').update({payment_logs:logs}).eq('id',id);
+    s.payment_logs=logs;
+    toast('Payment added successfully');
     document.getElementById('pa').value='';
     document.getElementById('pn').value='';
-    pSel(sid); rPayHist(); rDash();
-    toast('Payment saved! ৳'+Math.round(amt).toLocaleString());
-  }catch(e){toast('Save failed')}
+    rPaySel(); rDash(); rPayHist();
+  }catch(e){toast('Payment failed')}
 }
 
 function rPayHist(){
-  const el=document.getElementById('pay-hist');
-  let recent=[];
-  SS.forEach(s=>{
-    if(s.payment_logs&&s.payment_logs.length){
-      s.payment_logs.forEach(log=>recent.push({...log,student:s}));
-    }
-  });
-  recent.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  recent=recent.slice(0,30);
-  if(!recent.length){el.innerHTML='<div class="empty"><i class="ti ti-receipt"></i><div class="empty-txt">No payments yet</div></div>';return;}
-  el.innerHTML=recent.map(p=>`<div class="card" style="margin-bottom:8px">
-    <div class="card-row">
-      <div class="av av-sm">${ini(p.student.name)}</div>
-      <div class="si">
-        <div class="sn" style="font-size:13px">${p.student.name} <span class="pill pill-blue">${p.student.class}</span></div>
-        <div class="sm">${p.note||'Payment'} · ${p.date}</div>
-      </div>
-      <span class="pill pill-green">+${fmt(p.amount)}</span>
-    </div>
-  </div>`).join('');
+  const ph=document.getElementById('pay-hist');
+  let all=[];
+  SS.forEach(s=>{ if(s.payment_logs) s.payment_logs.forEach(l=>all.push({...l,student:s})) });
+  all.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!all.length){ph.innerHTML='<div class="empty">No history</div>';return}
+  ph.innerHTML=`<div class="card"><div class="card-body">`+all.map(l=>`<div class="rec-row">
+    <div class="si"><div><strong>${l.student.name}</strong> (${l.student.class})</div><div class="sm">${l.date} - ${l.note}</div></div>
+    <span class="pill pill-green">+${fmt(l.amount)}</span>
+  </div>`).join('')+`</div></div>`;
 }
 
-function qPay(id){
-  document.querySelectorAll('.bnb')[2].click();
-  setTimeout(()=>{const sel=document.getElementById('ps');sel.value=id;pSel(id)},80);
-}
-
-// ─── REGISTER / EDIT ───────────────────────────────────
+// ─── REGISTER & EDIT ───────────────────────────────────
 async function doRegister(){
-  const id=document.getElementById('edit-id').value;
   const name=document.getElementById('rn').value.trim();
   const cls=document.getElementById('rc').value;
-  const fee=parseFloat(document.getElementById('rf').value);
-  const ph=document.getElementById('rph').value.trim()||'N/A';
-  if(!name){alert('Enter student name');return}
-  if(!cls){alert('Select a class');return}
-  if(!fee||fee<=0){alert('Enter monthly fee');return}
-  try{
-    if(!id){
-      const defPayments={};
-      MONTHS.forEach(m=>defPayments[m]='due');
-      const {error}=await _sb.from('coaching_students').insert([{
-        name,class:cls,fee,phone:ph,direct_paid:0,payment_logs:[],payments:defPayments,
-        joined_date:new Date().toISOString().slice(0,10)
-      }]);
-      if(error)throw error;
-      toast(name+' added!');
-    } else {
-      const {error}=await _sb.from('coaching_students').update({name,class:cls,fee,phone:ph}).eq('id',id);
-      if(error)throw error;
-      toast(name+' updated!');
-    }
-    resetRegForm();
-    fetchCloud();
-  }catch(e){alert('Error: '+e.message)}
+  const fee=parseFloat(document.getElementById('rf').value)||0;
+  const phone=document.getElementById('rph').value.trim()||'N/A';
+  const editId=document.getElementById('edit-id').value;
+
+  if(!name||!cls||fee<=0) return toast('Fill required fields');
+
+  if(editId){
+    try{
+      await _sb.from('coaching_students').update({name,class:cls,fee,phone}).eq('id',editId);
+      const s=SS.find(x=>x.id==editId);
+      if(s){s.name=name;s.class=cls;s.fee=fee;s.phone=phone}
+      toast('Student updated');
+      resetRegForm(); goScreen('students',document.querySelectorAll('.bnb')[1]);
+    }catch(e){toast('Update failed')}
+  }else{
+    const today=new Date().toISOString().slice(0,10);
+    // নতুন ছাত্র অ্যাড হওয়ার সাথে সাথে সব মাস ডিফল্ট 'due' (লাল) থাকবে
+    const defPay={Jan:'due',Feb:'due',Mar:'due',Apr:'due',May:'due',Jun:'due',Jul:'due',Aug:'due',Sep:'due',Oct:'due',Nov:'due',Dec:'due'};
+    const newS={name,class:cls,fee,phone,joined_date:today,direct_paid:0,payment_logs:[],payments:defPay};
+    try{
+      const {data,error}=await _sb.from('coaching_students').insert([newS]).select();
+      if(error) throw error;
+      if(data) SS.push(data[0]);
+      toast('Student added');
+      resetRegForm(); goScreen('students',document.querySelectorAll('.bnb')[1]);
+    }catch(e){toast('Registration failed')}
+  }
 }
 
-function editStudent(dbId){
-  const s=SS.find(x=>x.id===dbId); if(!s)return;
-  document.querySelectorAll('.bnb')[3].click();
-  setTimeout(()=>{
-    document.getElementById('edit-id').value=s.id;
-    document.getElementById('rn').value=s.name;
-    document.getElementById('rc').value=s.class;
-    document.getElementById('rf').value=s.fee;
-    document.getElementById('rph').value=s.phone==='N/A'?'':s.phone;
-    document.getElementById('reg-title').innerHTML='<i class="ti ti-pencil"></i> Edit Student';
-    document.getElementById('reg-submit-btn').innerHTML='<i class="ti ti-device-floppy"></i> Update student';
-    document.getElementById('reg-cancel-btn').style.display='inline-flex';
-  },80);
+function editStudent(id){
+  const s=SS.find(x=>x.id===id); if(!s)return;
+  document.getElementById('edit-id').value=s.id;
+  document.getElementById('rn').value=s.name;
+  document.getElementById('rc').value=s.class;
+  document.getElementById('rf').value=s.fee;
+  document.getElementById('rph').value=s.phone==='N/A'?'':s.phone;
+  document.getElementById('reg-title').innerHTML=`<i class="ti ti-pencil"></i> Edit Student Information`;
+  document.getElementById('reg-submit-btn').innerHTML=`<i class="ti ti-check"></i> Update Student`;
+  document.getElementById('reg-cancel-btn').style.display='inline-flex';
+  goScreen('register',document.querySelectorAll('.bnb')[3]);
 }
 
 function resetRegForm(){
-  ['edit-id','rn','rc','rf','rph'].forEach(id=>{document.getElementById(id).value='';});
-  document.getElementById('reg-title').innerHTML='<i class="ti ti-user-plus"></i> New student registration';
-  document.getElementById('reg-submit-btn').innerHTML='<i class="ti ti-user-check"></i> Add student';
+  document.getElementById('edit-id').value='';
+  document.getElementById('rn').value='';
+  document.getElementById('rc').value='';
+  document.getElementById('rf').value='';
+  document.getElementById('rph').value='';
+  document.getElementById('reg-title').innerHTML=`<i class="ti ti-user-plus"></i> New student registration`;
+  document.getElementById('reg-submit-btn').innerHTML=`<i class="ti ti-user-check"></i> Add student`;
   document.getElementById('reg-cancel-btn').style.display='none';
 }
 
-// ─── INIT ──────────────────────────────────────────────
-fetchCloud();
+window.onload=()=>{fetchCloud()};
 </script>
 </body>
 </html>
