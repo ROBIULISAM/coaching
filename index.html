@@ -1,6 +1,741 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>CoachPro Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --brand:#4f46e5;--brand-50:#eef2ff;--brand-100:#c7d2fe;--brand-800:#3730a3;
+  --green:#10b981;--green-50:#ecfdf5;--green-800:#065f46;
+  --red:#ef4444;--red-50:#fef2f2;--red-800:#991b1b;
+  --amber:#f59e0b;--amber-50:#fffbeb;--amber-800:#92400e;
+  --navy:#0f172a;--navy2:#1e293b;--navy3:#334155;
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;
+  --text:#0f172a;--text2:#64748b;--text3:#94a3b8;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --radius:14px;--radius-sm:8px;--radius-pill:999px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.12);
+}
+html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);font-size:15px;line-height:1.5}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height:100vh}
+
+/* TOPBAR */
+.topbar{
+  background:var(--navy);
+  padding:14px 16px;
+  padding-top:calc(14px + env(safe-area-inset-top));
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.topbar-brand{display:flex;align-items:center;gap:10px;color:#fff}
+.topbar-brand i{font-size:22px;color:#818cf8}
+.topbar-brand-name{font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.topbar-brand-sub{font-size:11px;opacity:0.6;margin-top:-2px}
+.cloud-badge{display:flex;align-items:center;gap:5px;background:var(--navy2);padding:5px 10px;border-radius:var(--radius-pill);border:1px solid var(--navy3)}
+.cloud-dot{width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+.cloud-dot.offline{background:#ef4444;animation:none}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.9)}}
+.cloud-label{font-size:11px;color:rgba(255,255,255,0.8);white-space:nowrap}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding-bottom:85px}
+.screen{display:none;padding:14px}
+.screen.on{display:block;animation:fadeUp 0.2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;padding-bottom:env(safe-area-inset-bottom);
+  z-index:100;box-shadow:0 -2px 16px rgba(0,0,0,0.08);
+}
+.bnb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;border:none;background:none;cursor:pointer;color:var(--text3);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:500;transition:color 0.15s}
+.bnb i{font-size:22px;transition:transform 0.15s}
+.bnb.on{color:var(--brand)}
+.bnb.on i{transform:scale(1.1)}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.stat-info .lbl{font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
+.stat-info .val{font-size:22px;font-weight:700}
+.val.blue{color:var(--brand)}
+.val.green{color:var(--green)}
+.val.red{color:var(--red)}
+.val.gray{font-size:14px;color:var(--text)}
+.stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.icon-blue{background:var(--brand-50);color:var(--brand)}
+.icon-green{background:var(--green-50);color:var(--green)}
+.icon-red{background:var(--red-50);color:var(--red)}
+.icon-amber{background:var(--amber-50);color:var(--amber)}
+
+/* SECTION HEADER */
+.sec{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sec i{font-size:15px}
+.hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* CARDS */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:10px}
+.card-body{padding:14px}
+.card-row{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.card-row+.card-row{border-top:1px solid var(--border)}
+
+/* AVATAR */
+.av{width:40px;height:40px;border-radius:50%;background:var(--brand-50);color:var(--brand-800);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.av-sm{width:32px;height:32px;font-size:12px}
+.si{flex:1;min-width:0}
+.sn{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sm{font-size:12px;color:var(--text2);margin-top:1px}
+
+/* PROGRESS */
+.prog-wrap{margin-top:6px}
+.prog-bg{height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width 0.5s ease}
+.prog-fill.ok{background:var(--green)}
+.prog-fill.bad{background:var(--red)}
+.prog-lbl{font-size:11px;color:var(--text3);margin-top:3px;text-align:right}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:var(--radius-pill);font-weight:600}
+.pill-blue{background:var(--brand-50);color:var(--brand-800)}
+.pill-green{background:var(--green-50);color:var(--green-800)}
+.pill-red{background:var(--red-50);color:var(--red-800)}
+.pill-amber{background:var(--amber-50);color:var(--amber-800)}
+
+/* MONTH GRID */
+.months-wrap{margin:8px 0 4px}
+.months-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}
+.month-btn{padding:4px 2px;font-size:10px;font-weight:700;text-align:center;border:none;border-radius:4px;color:#fff;cursor:pointer;transition:opacity 0.15s}
+.month-btn:active{opacity:0.7}
+.month-paid{background:var(--green)}
+.month-due{background:var(--red)}
+.month-na{background:var(--text3)}
+
+/* FILTERS */
+.filter-wrap{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
+.filter-wrap::-webkit-scrollbar{display:none}
+.fb{padding:6px 14px;border-radius:var(--radius-pill);border:1px solid var(--border2);background:var(--surface);font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);white-space:nowrap;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.15s}
+.fb.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:18px;pointer-events:none}
+.search-wrap input{padding-left:38px;width:100%;height:44px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);font-size:14px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none}
+.search-wrap input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,0.12)}
+
+/* FORMS */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
+input[type=text],input[type=number],input[type=tel],input[type=date],select,textarea{
+  width:100%;height:48px;border:1px solid var(--border2);border-radius:var(--radius-sm);
+  padding:0 14px;font-size:15px;color:var(--text);background:var(--surface);
+  font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.15s,box-shadow 0.15s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,0.12)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:48px;padding:0 20px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-size:15px;font-weight:600;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.15s;width:100%}
+.btn:active{transform:scale(0.98)}
+.btn-primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn-primary:active{background:var(--brand-800)}
+.btn-success{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-danger{background:var(--red-50);color:var(--red-800);border-color:transparent}
+.btn-sm{height:36px;font-size:13px;padding:0 12px;border-radius:var(--radius-sm);width:auto}
+.btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2)}
+
+/* INV BOX */
+.inv-box{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-bottom:14px}
+.inv-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border)}
+.inv-row:last-child{border-bottom:none;font-weight:700;font-size:15px;padding-top:8px}
+
+/* LEDGER TABLE */
+.ledger-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.ledger-tbl th{background:var(--surface2);font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.ledger-tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ledger-tbl tr:last-child td{border-bottom:none}
+
+/* MODAL */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-backdrop.on{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:0 0 env(safe-area-inset-bottom)}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:4px;margin:12px auto 0}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-size:16px;font-weight:700}
+.modal-body{padding:16px}
+
+.ledger-hero{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.ledger-av{width:50px;height:50px;border-radius:50%;background:var(--brand-50);color:var(--brand-800);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+.ledger-name{font-size:16px;font-weight:700}
+.ledger-meta{font-size:12px;color:var(--text2);margin-top:2px}
+
+.sum3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sum-box{background:var(--surface2);border-radius:var(--radius-sm);padding:10px;text-align:center}
+.sum-lbl{font-size:11px;color:var(--text2);font-weight:600;margin-bottom:4px}
+.sum-val{font-size:16px;font-weight:700}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty i{font-size:40px;display:block;margin-bottom:10px;opacity:0.3}
+.empty-txt{font-size:14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:95px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:var(--radius-pill);font-size:14px;font-weight:500;display:none;align-items:center;gap:8px;white-space:nowrap;z-index:300;box-shadow:var(--shadow-md)}
+.toast.on{display:flex}
+
+/* REC ROW */
+.rec-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.rec-row:last-child{border-bottom:none}
+
+/* SYNC BANNER */
+.sync-banner{display:flex;align-items:center;gap:8px;background:var(--brand-50);border:1px solid var(--brand-100);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:12px;font-size:13px;color:var(--brand-800)}
+.sync-banner i{font-size:16px}
+.sync-banner.error{background:var(--red-50);border-color:#fecaca;color:var(--red-800)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <i class="ti ti-school"></i>
+    <div>
+      <div class="topbar-brand-name">CoachPro Academy</div>
+      <div class="topbar-brand-sub">Cloud Management System</div>
+    </div>
+  </div>
+  <div class="cloud-badge">
+    <div class="cloud-dot" id="sync-dot"></div>
+    <span class="cloud-label" id="sync-label">Syncing…</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- DASHBOARD -->
+  <div id="s-dashboard" class="screen on">
+    <div id="sync-msg" class="sync-banner" style="display:none"></div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-info"><div class="lbl">Students</div><div class="val blue" id="k-students">0</div></div>
+        <div class="stat-icon icon-blue"><i class="ti ti-users"></i></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info"><div class="lbl">Collected</div><div class="val green" id="k-cash">৳0</div></div>
+        <div class="stat-icon icon-green"><i class="ti ti-coin"></i></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info"><div class="lbl">Total Due</div><div class="val red" id="k-due">৳0</div></div>
+        <div class="stat-icon icon-red"><i class="ti ti-alert-circle"></i></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info"><div class="lbl">Month</div><div class="val gray" id="k-month">—</div></div>
+        <div class="stat-icon icon-amber"><i class="ti ti-calendar"></i></div>
+      </div>
+    </div>
+
+    <div class="sec"><i class="ti ti-chart-bar"></i> By class</div>
+    <div class="stat-grid" id="class-kpi"></div>
+
+    <div class="hr"></div>
+    <div class="sec"><i class="ti ti-clock"></i> Recent payments</div>
+    <div class="card"><div class="card-body" id="dash-recent" style="padding:4px 0"></div></div>
+  </div>
+
+  <!-- STUDENTS -->
+  <div id="s-students" class="screen">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" placeholder="Search name or phone…" oninput="srch(this.value)">
+    </div>
+    <div class="filter-wrap">
+      <button class="fb on" onclick="clsF('all',this)">All</button>
+      <button class="fb" onclick="clsF('Class 6',this)">Class 6</button>
+      <button class="fb" onclick="clsF('Class 7',this)">Class 7</button>
+      <button class="fb" onclick="clsF('Class 8',this)">Class 8</button>
+      <button class="fb" onclick="clsF('Class 9',this)">Class 9</button>
+      <button class="fb" onclick="clsF('Class 10',this)">Class 10</button>
+    </div>
+    <div id="student-list"></div>
+  </div>
+
+  <!-- PAYMENTS -->
+  <div id="s-payment" class="screen">
+    <div class="sec"><i class="ti ti-cash"></i> Collect payment</div>
+    <div class="card card-body">
+      <div class="form-group">
+        <label class="form-label">Student</label>
+        <select id="ps" onchange="pSel(this.value)"><option value="">— choose student —</option></select>
+      </div>
+      <div class="form-grid" style="margin-bottom:14px">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Amount (BDT)</label>
+          <input type="number" id="pa" placeholder="0" min="0">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Note</label>
+          <input type="text" id="pn" placeholder="e.g. May fee">
+        </div>
+      </div>
+      <div class="inv-box" id="pay-info" style="display:none">
+        <div class="inv-row"><span style="color:var(--text2)">Monthly fee</span><span id="pi-fee">—</span></div>
+        <div class="inv-row"><span style="color:var(--text2)">Generated</span><span id="pi-gen">—</span></div>
+        <div class="inv-row"><span style="color:var(--text2)">Paid so far</span><span id="pi-paid" style="color:var(--green)">—</span></div>
+        <div class="inv-row"><span style="color:var(--text2)">Outstanding</span><span id="pi-due" style="color:var(--red)">—</span></div>
+      </div>
+      <button class="btn btn-success" onclick="doPayment()"><i class="ti ti-check"></i> Save payment</button>
+    </div>
+    <div class="hr"></div>
+    <div class="sec"><i class="ti ti-receipt"></i> Payment history</div>
+    <div id="pay-hist"></div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="s-register" class="screen">
+    <div class="sec" id="reg-title"><i class="ti ti-user-plus"></i> New student registration</div>
+    <div class="card card-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Full name *</label>
+          <input type="text" id="rn" placeholder="Student name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Class *</label>
+          <select id="rc">
+            <option value="">— select —</option>
+            <option value="Class 6">Class 6</option>
+            <option value="Class 7">Class 7</option>
+            <option value="Class 8">Class 8</option>
+            <option value="Class 9">Class 9</option>
+            <option value="Class 10">Class 10</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Monthly fee (BDT) *</label>
+          <input type="number" id="rf" placeholder="500" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile number</label>
+          <input type="tel" id="rph" placeholder="01XXXXXXXXX">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" id="reg-submit-btn" onclick="doRegister()"><i class="ti ti-user-check"></i> Add student</button>
+        <button class="btn btn-ghost" id="reg-cancel-btn" style="display:none;width:auto;padding:0 16px" onclick="resetRegForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnb on" onclick="goScreen('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+  <button class="bnb" onclick="goScreen('students',this)"><i class="ti ti-users"></i> Students</button>
+  <button class="bnb" onclick="goScreen('payment',this)"><i class="ti ti-cash"></i> Payments</button>
+  <button class="bnb" onclick="goScreen('register',this)"><i class="ti ti-user-plus"></i> Register</button>
+</div>
+
+<!-- LEDGER MODAL -->
+<div class="modal-backdrop" id="modal-bd" onclick="closeMod(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hd">
+      <span class="modal-title" id="modal-title">Payment ledger</span>
+      <button class="btn btn-sm btn-ghost" onclick="closeMod(null,true)" style="width:auto"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="ti ti-check-circle"></i><span id="tmsg"></span></div>
+
+<script>
+// ─── SUPABASE CONFIG ───────────────────────────────────
+const SUPABASE_URL = 'https://ihegxlhqppawbwgsgytq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZWd4bGhxcHBhd2J3Z3NneXRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjI2MzgsImV4cCI6MjA5NTYzODYzOH0.TklHPf7ARXlABCnuTQYrnQFZ_ZnO4EArofRJ-7JD6RQ';
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let SS = []; // students from cloud
+let clf = 'all', sq = '';
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ─── SYNC STATUS ───────────────────────────────────────
+function setSyncStatus(ok, txt){
+  document.getElementById('sync-dot').className = 'cloud-dot' + (ok ? '' : ' offline');
+  document.getElementById('sync-label').textContent = txt;
+}
+
+// ─── CLOUD FETCH ───────────────────────────────────────
+async function fetchCloud(){
+  setSyncStatus(true,'Syncing…');
+  try {
+    const {data,error} = await _sb.from('coaching_students').select('*').order('id',{ascending:true});
+    if(error) throw error;
+    SS = data || [];
+    setSyncStatus(true,'Live ✓');
+    hideSyncMsg();
+  } catch(e){
+    setSyncStatus(false,'Offline');
+    showSyncMsg('Cloud sync failed — data may be outdated','error');
+    // fallback: try localStorage
+    const local = localStorage.getItem('cp_s_bak');
+    if(local) SS = JSON.parse(local);
+  }
+  rDash(); rStudents(); rPayHist(); rPaySel();
+}
+
+// backup to localStorage on each fetch
+function backupLocal(){ try{localStorage.setItem('cp_s_bak',JSON.stringify(SS))}catch(e){} }
+
+function showSyncMsg(msg, type=''){
+  const el=document.getElementById('sync-msg');
+  el.innerHTML=`<i class="ti ti-${type==='error'?'wifi-off':'cloud-check'}"></i> ${msg}`;
+  el.className='sync-banner'+(type?' '+type:'');
+  el.style.display='flex';
+}
+function hideSyncMsg(){ document.getElementById('sync-msg').style.display='none'; }
+
+// ─── HELPERS ───────────────────────────────────────────
+function toast(m){
+  const t=document.getElementById('toast');
+  document.getElementById('tmsg').textContent=m;
+  t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2500);
+}
+function ini(n){return n.trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?'}
+function fmt(n){return '৳'+Math.round(n).toLocaleString()}
+function fdate(ts){return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
+function ftime(ts){return new Date(ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}
+
+// Fee calc: months since joining × monthly fee
+function mDiff(jd){
+  const d=new Date(jd), now=new Date();
+  return Math.max(1,(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth())+1);
+}
+function sGen(s){ return mDiff(s.joined_date||s.jd||new Date().toISOString().slice(0,10)) * parseFloat(s.fee||0); }
+function sPaid(s){ return parseFloat(s.direct_paid||0); }
+function sDue(s){ return Math.max(0, sGen(s) - sPaid(s)); }
+
+// ─── NAVIGATION ────────────────────────────────────────
+function goScreen(name,btn){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.bnb').forEach(el=>el.classList.remove('on'));
+  document.getElementById('s-'+name).classList.add('on');
+  btn.classList.add('on');
+  closeMod(null,true);
+  if(name==='dashboard')rDash();
+  if(name==='students')rStudents();
+  if(name==='payment'){rPaySel();rPayHist();}
+}
+
+// ─── DASHBOARD ─────────────────────────────────────────
+function rDash(){
+  document.getElementById('k-students').textContent=SS.length;
+  const totalPaid=SS.reduce((a,s)=>a+sPaid(s),0);
+  const totalDue=SS.reduce((a,s)=>a+sDue(s),0);
+  document.getElementById('k-cash').textContent=fmt(totalPaid);
+  document.getElementById('k-due').textContent=fmt(totalDue);
+  document.getElementById('k-month').textContent=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  const ck=document.getElementById('class-kpi'); ck.innerHTML='';
+  let any=false;
+  ['Class 6','Class 7','Class 8','Class 9','Class 10'].forEach(c=>{
+    const arr=SS.filter(s=>s.class===c); if(!arr.length)return; any=true;
+    const d=document.createElement('div'); d.className='stat-card';
+    d.innerHTML=`<div class="stat-info"><div class="lbl">${c}</div><div class="val blue">${arr.length}<span style="font-size:13px;font-weight:400"> students</span></div></div><div class="stat-icon icon-blue"><i class="ti ti-book"></i></div>`;
+    ck.appendChild(d);
+  });
+  if(!any) ck.innerHTML='<p style="font-size:13px;color:var(--text2)">No students enrolled yet</p>';
+
+  // Recent payments from payment_logs
+  const rp=document.getElementById('dash-recent');
+  let recent=[];
+  SS.forEach(s=>{
+    if(s.payment_logs && s.payment_logs.length){
+      s.payment_logs.forEach(log=>recent.push({...log,student:s}));
+    }
+  });
+  recent.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  recent=recent.slice(0,5);
+  if(!recent.length){rp.innerHTML='<div class="empty"><i class="ti ti-receipt"></i><div class="empty-txt">No payments yet</div></div>';return;}
+  rp.innerHTML=recent.map(p=>`<div class="rec-row">
+    <div class="av av-sm">${ini(p.student.name)}</div>
+    <div class="si"><div class="sn" style="font-size:13px">${p.student.name}</div><div class="sm">${p.date}</div></div>
+    <span class="pill pill-green">+${fmt(p.amount)}</span>
+  </div>`).join('');
+  backupLocal();
+}
+
+// ─── STUDENTS LIST ─────────────────────────────────────
+function rStudents(){
+  const el=document.getElementById('student-list');
+  let list=SS;
+  if(clf!=='all') list=list.filter(s=>s.class===clf);
+  if(sq) list=list.filter(s=>s.name.toLowerCase().includes(sq)||(s.phone||'').includes(sq));
+  if(!list.length){el.innerHTML=`<div class="empty"><i class="ti ti-users"></i><div class="empty-txt">No students found</div></div>`;return;}
+  el.innerHTML=list.map(s=>{
+    const due=sDue(s),paid=sPaid(s),gen=sGen(s);
+    const pct=gen>0?Math.round(Math.min(100,paid/gen*100)):100;
+    const barCls=due>0?'bad':'ok';
+    // months grid
+    const payments=s.payments||{};
+    const monthsHtml=MONTHS.map(m=>{
+      const st=payments[m]||'due';
+      const cls=st==='paid'?'month-paid':(st==='na'?'month-na':'month-due');
+      return `<button class="month-btn ${cls}" onclick="toggleMonth(${s.id},'${m}')">${m}</button>`;
+    }).join('');
+    return `<div class="card" style="margin-bottom:10px">
+      <div class="card-row" style="align-items:flex-start">
+        <div class="av" style="margin-top:2px">${ini(s.name)}</div>
+        <div class="si">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="sn">${s.name}</span>
+            <span class="pill pill-blue">${s.class}</span>
+            ${due>0?`<span class="pill pill-red">Due ${fmt(due)}</span>`:`<span class="pill pill-green">Paid up</span>`}
+          </div>
+          <div class="sm" style="margin-top:3px">${fmt(s.fee)}/month${s.phone&&s.phone!=='N/A'?' · '+s.phone:''}</div>
+          <div class="months-wrap"><div class="months-grid">${monthsHtml}</div></div>
+          <div class="prog-wrap">
+            <div class="prog-bg"><div class="prog-fill ${barCls}" style="width:${pct}%"></div></div>
+            <div class="prog-lbl">${fmt(paid)} of ${fmt(gen)} · ${pct}%</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface2)">
+        <button class="btn btn-sm" style="flex:1;background:var(--brand-50);color:var(--brand-800);border-color:transparent" onclick="openLedger(${s.id})"><i class="ti ti-receipt"></i> Ledger</button>
+        <button class="btn btn-sm btn-success" style="flex:1" onclick="qPay(${s.id})"><i class="ti ti-plus"></i> Pay</button>
+        <button class="btn btn-sm" style="background:var(--amber-50);color:var(--amber-800);border-color:transparent" onclick="editStudent(${s.id})"><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="delS(${s.id})"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function srch(v){sq=v.toLowerCase();rStudents()}
+function clsF(c,btn){clf=c;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');rStudents()}
+
+// ─── MONTH TOGGLE ──────────────────────────────────────
+async function toggleMonth(dbId, month){
+  const s=SS.find(x=>x.id===dbId); if(!s)return;
+  const cur=(s.payments||{})[month]||'due';
+  const next=cur==='due'?'paid':(cur==='paid'?'na':'due');
+  const updated={...(s.payments||{})};
+  updated[month]=next;
+  try{
+    await _sb.from('coaching_students').update({payments:updated}).eq('id',dbId);
+    s.payments=updated;
+    rStudents(); rDash();
+    toast(month+' → '+next);
+  }catch(e){toast('Update failed')}
+}
+
+// ─── DELETE ────────────────────────────────────────────
+async function delS(id){
+  if(!confirm('Delete this student from cloud?'))return;
+  try{
+    await _sb.from('coaching_students').delete().eq('id',id);
+    SS=SS.filter(s=>s.id!==id);
+    rStudents(); rDash(); rPaySel();
+    toast('Student deleted');
+  }catch(e){toast('Delete failed')}
+}
+
+// ─── LEDGER MODAL ──────────────────────────────────────
+function openLedger(id){
+  const s=SS.find(x=>x.id===id); if(!s)return;
+  const gen=sGen(s),paid=sPaid(s),due=sDue(s);
+  const pct=gen>0?Math.round(Math.min(100,paid/gen*100)):100;
+  const logs=s.payment_logs||[];
+  document.getElementById('modal-title').textContent=s.name;
+  document.getElementById('modal-body').innerHTML=`
+    <div class="ledger-hero">
+      <div class="ledger-av">${ini(s.name)}</div>
+      <div>
+        <div class="ledger-name">${s.name}</div>
+        <div class="ledger-meta">${s.class} · ${fmt(s.fee)}/month</div>
+        <div class="ledger-meta">${s.phone&&s.phone!=='N/A'?s.phone:''}</div>
+      </div>
+    </div>
+    <div class="sum3">
+      <div class="sum-box"><div class="sum-lbl">Generated</div><div class="sum-val" style="color:var(--brand)">${fmt(gen)}</div></div>
+      <div class="sum-box"><div class="sum-lbl">Collected</div><div class="sum-val" style="color:var(--green)">${fmt(paid)}</div></div>
+      <div class="sum-box"><div class="sum-lbl">Due</div><div class="sum-val" style="color:var(--red)">${fmt(due)}</div></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="prog-bg" style="height:6px"><div class="prog-fill ${due>0?'bad':'ok'}" style="width:${pct}%"></div></div>
+      <div class="prog-lbl">${pct}% paid</div>
+    </div>
+    ${logs.length===0
+      ?'<div class="empty" style="padding:20px 0"><i class="ti ti-receipt"></i><div class="empty-txt">No payments recorded yet</div></div>'
+      :`<div style="overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border);overflow:hidden">
+        <table class="ledger-tbl">
+          <thead><tr><th>Date</th><th>Amount</th></tr></thead>
+          <tbody>${[...logs].reverse().map(p=>`<tr>
+            <td style="font-size:13px">${p.date}</td>
+            <td><span class="pill pill-green">+${fmt(p.amount)}</span></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`
+    }
+    <div style="margin-top:16px;display:flex;gap:10px">
+      <button class="btn btn-success" onclick="closeMod(null,true);qPay(${id})"><i class="ti ti-plus"></i> Add payment</button>
+      <button class="btn btn-ghost" onclick="closeMod(null,true)" style="width:auto;padding:0 16px">Close</button>
+    </div>`;
+  document.getElementById('modal-bd').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+
+function closeMod(e,force){
+  if(force||!e||e.target===document.getElementById('modal-bd')){
+    document.getElementById('modal-bd').classList.remove('on');
+    document.body.style.overflow='';
+  }
+}
+
+// ─── PAYMENT ───────────────────────────────────────────
+function rPaySel(){
+  const sel=document.getElementById('ps');
+  sel.innerHTML='<option value="">— choose student —</option>';
+  SS.forEach(s=>{sel.innerHTML+=`<option value="${s.id}">${s.name} (${s.class}) — due ${fmt(sDue(s))}</option>`});
+  document.getElementById('pay-info').style.display='none';
+}
+
+function pSel(id){
+  if(!id){document.getElementById('pay-info').style.display='none';return}
+  const s=SS.find(x=>x.id==id); if(!s)return;
+  document.getElementById('pi-fee').textContent=fmt(s.fee);
+  document.getElementById('pi-gen').textContent=fmt(sGen(s));
+  document.getElementById('pi-paid').textContent=fmt(sPaid(s));
+  document.getElementById('pi-due').textContent=fmt(sDue(s));
+  document.getElementById('pay-info').style.display='block';
+}
+
+async function doPayment(){
+  const sid=document.getElementById('ps').value;
+  const amt=parseFloat(document.getElementById('pa').value);
+  const note=document.getElementById('pn').value.trim();
+  if(!sid){alert('Please select a student');return}
+  if(!amt||amt<=0){alert('Enter a valid amount');return}
+  const s=SS.find(x=>x.id==sid); if(!s)return;
+  const now=new Date();
+  const timestamp=now.toLocaleDateString('en-GB')+' '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const logs=Array.isArray(s.payment_logs)?s.payment_logs:[];
+  logs.push({date:timestamp,amount:amt,note:note||'Payment'});
+  const newPaid=parseFloat(s.direct_paid||0)+amt;
+  try{
+    await _sb.from('coaching_students').update({payment_logs:logs,direct_paid:newPaid}).eq('id',sid);
+    s.payment_logs=logs; s.direct_paid=newPaid;
+    document.getElementById('pa').value='';
+    document.getElementById('pn').value='';
+    pSel(sid); rPayHist(); rDash();
+    toast('Payment saved! ৳'+Math.round(amt).toLocaleString());
+  }catch(e){toast('Save failed')}
+}
+
+function rPayHist(){
+  const el=document.getElementById('pay-hist');
+  let recent=[];
+  SS.forEach(s=>{
+    if(s.payment_logs&&s.payment_logs.length){
+      s.payment_logs.forEach(log=>recent.push({...log,student:s}));
+    }
+  });
+  recent.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  recent=recent.slice(0,30);
+  if(!recent.length){el.innerHTML='<div class="empty"><i class="ti ti-receipt"></i><div class="empty-txt">No payments yet</div></div>';return;}
+  el.innerHTML=recent.map(p=>`<div class="card" style="margin-bottom:8px">
+    <div class="card-row">
+      <div class="av av-sm">${ini(p.student.name)}</div>
+      <div class="si">
+        <div class="sn" style="font-size:13px">${p.student.name} <span class="pill pill-blue">${p.student.class}</span></div>
+        <div class="sm">${p.note||'Payment'} · ${p.date}</div>
+      </div>
+      <span class="pill pill-green">+${fmt(p.amount)}</span>
+    </div>
+  </div>`).join('');
+}
+
+function qPay(id){
+  document.querySelectorAll('.bnb')[2].click();
+  setTimeout(()=>{const sel=document.getElementById('ps');sel.value=id;pSel(id)},80);
+}
+
+// ─── REGISTER / EDIT ───────────────────────────────────
+async function doRegister(){
+  const id=document.getElementById('edit-id').value;
+  const name=document.getElementById('rn').value.trim();
+  const cls=document.getElementById('rc').value;
+  const fee=parseFloat(document.getElementById('rf').value);
+  const ph=document.getElementById('rph').value.trim()||'N/A';
+  if(!name){alert('Enter student name');return}
+  if(!cls){alert('Select a class');return}
+  if(!fee||fee<=0){alert('Enter monthly fee');return}
+  try{
+    if(!id){
+      const defPayments={};
+      MONTHS.forEach(m=>defPayments[m]='due');
+      const {error}=await _sb.from('coaching_students').insert([{
+        name,class:cls,fee,phone:ph,direct_paid:0,payment_logs:[],payments:defPayments,
+        joined_date:new Date().toISOString().slice(0,10)
+      }]);
+      if(error)throw error;
+      toast(name+' added!');
+    } else {
+      const {error}=await _sb.from('coaching_students').update({name,class:cls,fee,phone:ph}).eq('id',id);
+      if(error)throw error;
+      toast(name+' updated!');
+    }
+    resetRegForm();
+    fetchCloud();
+  }catch(e){alert('Error: '+e.message)}
+}
+
+function editStudent(dbId){
+  const s=SS.find(x=>x.id===dbId); if(!s)return;
+  document.querySelectorAll('.bnb')[3].click();
+  setTimeout(()=>{
+    document.getElementById('edit-id').value=s.id;
+    document.getElementById('rn').value=s.name;
+    document.getElementById('rc').value=s.class;
+    document.getElementById('rf').value=s.fee;
+    document.getElementById('rph').value=s.phone==='N/A'?'':s.phone;
+    document.getElementById('reg-title').innerHTML='<i class="ti ti-pencil"></i> Edit Student';
+    document.getElementById('reg-submit-btn').innerHTML='<i class="ti ti-device-floppy"></i> Update student';
+    document.getElementById('reg-cancel-btn').style.display='inline-flex';
+  },80);
+}
+
+function resetRegForm(){
+  ['edit-id','rn','rc','rf','rph'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('reg-title').innerHTML='<i class="ti ti-user-plus"></i> New student registration';
+  document.getElementById('reg-submit-btn').innerHTML='<i class="ti ti-user-check"></i> Add student';
+  document.getElementById('reg-cancel-btn').style.display='none';
+}
+
+// ─── INIT ──────────────────────────────────────────────
+fetchCloud();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CoachPro - Live Cloud Sync</title>
