@@ -3,107 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coaching Management</title>
+  <title>CoachPro Academy - Management System</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <style>
     :root {
       --bg: #f8fafc; --surface: #ffffff; --surface2: #f1f5f9; --border: #e2e8f0;
       --text: #0f172a; --text2: #475569; --text3: #94a3b8;
-      --brand: #2563eb; --brand-50: #eff6ff; --brand-800: #1e40af;
-      --green: #16a34a; --green-50: #f0fdf4; --green-800: #166534;
-      --red: #dc2626; --red-50: #fef2f2; --red-800: #991b1b;
-      --amber-50: #fef3c7; --amber-800: #92400e;
-      --radius: 12px; --radius-sm: 8px;
+      --brand: #0f172a; --brand-light: #1e293b; --accent: #2563eb;
+      --green: #10b981; --red: #ef4444; --gray-btn: #94a3b8;
+      --radius: 16px; --radius-sm: 8px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 70px; }
-    header { background: var(--surface); padding: 16px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 18px; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 8px; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+    
+    /* Premium Header Matching image_422de4.png */
+    header { background: var(--brand); padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .logo-block { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { background: #3b82f6; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+    .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+    .logo-sub { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+    .sync-badge { background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 20px; font-size: 11px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.1); }
+    .cloud-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #10b981; }
+    .cloud-dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
     .container { max-width: 500px; margin: 0 auto; padding: 16px; }
     .screen { display: none; } .screen.on { display: block; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+    
+    /* Styled Cards Matching image_422de4.png */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .card-body { padding: 16px; }
-    .card-row { display: flex; gap: 12px; padding: 16px; }
-    .av { width: 44px; height: 44px; background: var(--brand-50); color: var(--brand-800); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; }
-    .av-sm { width: 32px; height: 32px; font-size: 12px; }
+    .card-row { display: flex; gap: 14px; padding: 16px; }
+    .av { width: 46px; height: 46px; background: #eff6ff; color: #1e40af; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
     .si { flex: 1; min-width: 0; }
-    .sn { font-weight: 600; font-size: 15px; color: var(--text); }
-    .sm { font-size: 13px; color: var(--text2); margin-top: 1px; }
-    .pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-    .pill-blue { background: var(--brand-50); color: var(--brand-800); }
-    .pill-green { background: var(--green-50); color: var(--green-800); }
-    .pill-red { background: var(--red-50); color: var(--red-800); }
-    .months-wrap { width: 100%; overflow-x: auto; margin-top: 10px; scrollbar-width: none; }
-    .months-wrap::-webkit-scrollbar { display: none; }
-    .months-grid { display: flex; gap: 6px; padding-bottom: 2px; width: max-content; }
-    .month-btn { padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 48px; }
-    .month-paid { background: var(--green); color: white; border-color: var(--green); }
-    .month-due { background: var(--red-50); color: var(--red); border-color: #fca5a5; }
-    .month-partial { background: #fef3c7; color: #d97706; border-color: #fde68a; }
-    .month-na { background: var(--surface2); color: var(--text3); border-color: var(--border); }
-    .month-subtext { font-size: 9px; opacity: 0.9; font-weight: normal; }
-    .prog-wrap { margin-top: 12px; }
-    .prog-bg { background: var(--surface2); height: 4px; border-radius: 2px; overflow: hidden; }
-    .prog-fill { height: 100%; width: 0; transition: width 0.3s; }
-    .prog-fill.ok { background: var(--green); } .prog-fill.bad { background: var(--brand); }
-    .prog-lbl { font-size: 11px; color: var(--text3); margin-top: 4px; text-align: right; }
-    .bnb { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; height: 60px; z-index: 10; }
-    .bnb-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text2); font-size: 11px; gap: 4px; cursor: pointer; }
-    .bnb-btn.on { color: var(--brand); font-weight: 600; }
-    .bnb-btn i { font-size: 20px; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 500; cursor: pointer; width: 100%; transition: all 0.2s; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; width: auto; }
-    .btn-primary { background: var(--brand); color: white; border-color: var(--brand); }
-    .btn-success { background: var(--green); color: white; border-color: var(--green); }
-    .btn-danger { background: var(--red-50); color: var(--red); border-color: transparent; }
-    .btn-ghost { background: transparent; border-color: transparent; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
-    .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface); color: var(--text); outline: none; }
-    .form-control:focus { border-color: var(--brand); }
+    .sn { font-weight: 700; font-size: 16px; color: var(--text); }
+    .sm { font-size: 13px; color: var(--text2); margin-top: 3px; }
+    
+    /* Badges */
+    .pill { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+    .pill-blue { background: #eff6ff; color: #1e40af; }
+    .pill-green { background: #d1fae5; color: #065f46; }
+    .pill-red { background: #fee2e2; color: #991b1b; }
+    
+    /* Custom Grid Layout for Months status (tap to toggle) */
+    .status-lbl { font-size: 12px; font-weight: 600; color: var(--text2); margin-top: 10px; margin-bottom: 6px; }
+    .months-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 8px; }
+    .month-btn { padding: 6px 0; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; color: white; transition: opacity 0.2s; }
+    .month-paid { background: var(--green); }
+    .month-due { background: var(--red); }
+    .month-na { background: var(--gray-btn); }
+    
+    /* Summary row indicators */
+    .ind-row { display: flex; gap: 10px; font-size: 11px; color: var(--text2); font-weight: 500; margin-bottom: 8px; }
+    .ind { display: inline-flex; align-items: center; gap: 4px; }
+    .ind::before { content:''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .ind-p::before { background: var(--green); }
+    .ind-d::before { background: var(--red); }
+    .ind-n::before { background: var(--gray-btn); }
+
+    .card-footer-info { text-align: right; font-size: 12px; color: var(--text3); padding: 0 16px 12px 0; font-weight: 500; }
+    
+    /* Footer Buttons Matching image_422de4.png */
+    .action-bar { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); background: #f8fafc; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-sm { padding: 8px 12px; }
+    .btn-pay { background: var(--green); color: white; border-color: var(--green); flex: 2; }
+    .btn-ledger { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; flex: 1.5; }
+    .btn-edit { background: #fffbeb; color: #d97706; border-color: #fde68a; width: 40px; padding: 0; }
+    .btn-del { background: #fef2f2; color: var(--red); border-color: #fca5a5; width: 40px; padding: 0; }
+    
+    /* Inputs Styling */
     .search-box { position: relative; margin-bottom: 16px; }
-    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); }
-    .search-box input { padding-left: 36px; }
-    .filter-row { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; scrollbar-width: none; }
-    .fb { padding: 6px 12px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); font-size: 12px; color: var(--text2); cursor: pointer; white-space: nowrap; }
-    .fb.on { background: var(--brand); color: white; border-color: var(--brand); }
+    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 18px; }
+    .form-control { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; outline: none; transition: border 0.2s; }
+    .search-box input { padding-left: 42px; border-radius: var(--radius-sm); }
+    .form-control:focus { border-color: #3b82f6; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+
+    /* Filter Row Component */
+    .filter-row { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; scrollbar-width: none; }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .fb { padding: 6px 16px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; white-space: nowrap; }
+    .fb.on { background: #0f172a; color: white; border-color: #0f172a; }
+
+    /* KPI Layout */
     .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .stat-info .lbl { font-size: 12px; color: var(--text3); font-weight: 500; }
-    .stat-info .val { font-size: 20px; font-weight: 700; margin-top: 4px; }
-    .stat-info .val.blue { color: var(--brand); } .stat-info .val.green { color: var(--green); } .stat-info .val.red { color: var(--red); }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .stat-info .lbl { font-size: 12px; color: var(--text3); font-weight: 600; text-transform: uppercase; }
+    .stat-info .val { font-size: 20px; font-weight: 800; margin-top: 4px; }
+    .stat-info .val.blue { color: #2563eb; } .stat-info .val.green { color: var(--green); } .stat-info .val.red { color: var(--red); }
     .stat-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .icon-blue { background: var(--brand-50); color: var(--brand-800); }
-    .icon-green { background: var(--green-50); color: var(--green-800); }
-    .icon-red { background: var(--red-50); color: var(--red-800); }
-    .sec-title { font-size: 14px; font-weight: 600; color: var(--text2); margin: 20px 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
-    .rec-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .rec-row:last-child { border-bottom: none; }
-    .empty { padding: 40px 16px; text-align: center; color: var(--text3); }
-    .empty i { font-size: 32px; }
-    .empty-txt { font-size: 13px; margin-top: 8px; }
-    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    
+    /* Navigation Bar */
+    .bnb { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; height: 65px; z-index: 100; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
+    .bnb-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text2); font-size: 11px; font-weight: 500; gap: 4px; cursor: pointer; }
+    .bnb-btn.on { color: #2563eb; font-weight: 700; }
+    .bnb-btn i { font-size: 22px; }
+
+    /* Popups / Ledger Modal */
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); display: flex; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .modal.on { opacity: 1; pointer-events: auto; }
-    .modal-content { background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius) var(--radius) 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.2s; max-height: 90vh; overflow-y: auto; }
+    .modal-content { background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius) var(--radius) 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.2s; max-height: 85vh; overflow-y: auto; }
     .modal.on .modal-content { transform: translateY(0); }
-    .modal-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .modal-t { font-size: 16px; font-weight: 600; }
-    .ledger-hero { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; background: var(--surface2); padding: 12px; border-radius: var(--radius-sm); }
-    .ledger-av { width: 40px; height: 40px; background: var(--brand); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
-    .ledger-name { font-weight: 600; font-size: 15px; }
-    .ledger-meta { font-size: 12px; color: var(--text2); }
-    .sum3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-    .sum-box { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; text-align: center; }
-    .sum-lbl { font-size: 10px; color: var(--text3); font-weight: 500; }
-    .sum-val { font-size: 13px; font-weight: 600; margin-top: 2px; }
+    .modal-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-t { font-size: 18px; font-weight: 700; }
+    
+    .sum3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .sum-box { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; text-align: center; }
+    .sum-lbl { font-size: 11px; color: var(--text3); font-weight: 600; }
+    .sum-val { font-size: 14px; font-weight: 700; margin-top: 4px; }
+    
     .ledger-tbl { width: 100%; border-collapse: collapse; text-align: left; }
-    .ledger-tbl th { font-size: 11px; font-weight: 600; color: var(--text3); padding: 6px 8px; background: var(--surface2); }
-    .ledger-tbl td { padding: 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
-    .sync-banner { display: none; align-items: center; gap: 8px; background: #fef3c7; color: #92400e; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12px; margin-bottom: 12px; }
-    .sync-banner.error { background: var(--red-50); color: var(--red-800); }
-    .cloud-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #22c55e; }
-    .cloud-dot.offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
-    .toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -100%); background: #0f172a; color: white; padding: 10px 16px; border-radius: 30px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); opacity: 0; transition: all 0.3s; z-index: 1000; pointer-events: none; }
+    .ledger-tbl th { font-size: 12px; font-weight: 600; color: var(--text2); padding: 10px; background: var(--surface2); }
+    .ledger-tbl td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
+
+    .toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -100%); background: #0f172a; color: white; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.2); pointer-events: none; }
     .toast.on { transform: translate(-50%, 0); opacity: 1; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -111,42 +125,41 @@
 <body>
 
   <header>
-    <div class="logo"><i class="ti ti-school" style="font-size:24px"></i> Coaching Pro</div>
-    <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-weight:500">
-      <span id="sync-dot" class="cloud-dot"></span> <span id="sync-label">Syncing…</span>
+    <div class="logo-block">
+      <div class="logo-icon"><i class="ti ti-school"></i></div>
+      <div>
+        <div class="logo-text">CoachPro Academy</div>
+        <div class="logo-sub">Cloud Management System</div>
+      </div>
+    </div>
+    <div class="sync-badge">
+      <span id="sync-dot" class="cloud-dot"></span> <span id="sync-label">Live ✓</span>
     </div>
   </header>
 
   <div class="container">
-    <div id="sync-msg" class="sync-banner"></div>
-
+    
+    <!-- DASHBOARD SCREEN -->
     <div id="s-dashboard" class="screen on">
       <div class="kpi-grid">
         <div class="stat-card">
           <div class="stat-info"><div class="lbl">Total Students</div><div id="k-students" class="val blue">0</div></div>
-          <div class="stat-icon icon-blue"><i class="ti ti-users"></i></div>
         </div>
         <div class="stat-card">
-          <div class="stat-info"><div id="k-month" class="lbl">This Month</div><div id="k-cash" class="val green">৳0</div></div>
-          <div class="stat-icon icon-green"><i class="ti ti-wallet"></i></div>
+          <div class="stat-info"><div class="lbl">Total Collected</div><div id="k-cash" class="val green">৳0</div></div>
         </div>
       </div>
       <div class="stat-card" style="margin-bottom:16px">
-        <div class="stat-info" style="width:100%"><div class="lbl">Total Outstanding Due</div><div id="k-due" class="val red" style="font-size:24px">৳0</div></div>
-        <div class="stat-icon icon-red"><i class="ti ti-alert-circle"></i></div>
+        <div class="stat-info"><div class="lbl">Total Outstanding Due</div><div id="k-due" class="val red" style="font-size:24px">৳0</div></div>
       </div>
-      
-      <div class="sec-title">Class Wise Enrollment</div>
-      <div id="class-kpi" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"></div>
-
-      <div class="sec-title">Recent Payments</div>
-      <div class="card card-body" id="dash-recent" style="padding-top:4px;padding-bottom:4px"></div>
+      <div id="class-kpi" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
     </div>
 
+    <!-- STUDENTS SCREEN -->
     <div id="s-students" class="screen">
-      <div class="search-box"><i class="ti ti-search"></i><input type="text" class="form-control" placeholder="Search student name or phone..." oninput="srch(this.value)"></div>
+      <div class="search-box"><i class="ti ti-search"></i><input type="text" class="form-control" placeholder="Search name or phone..." oninput="srch(this.value)"></div>
       <div class="filter-row">
-        <button class="fb on" onclick="clsF('all',this)">All Classes</button>
+        <button class="fb on" onclick="clsF('all',this)">All</button>
         <button class="fb" onclick="clsF('Class 6',this)">Class 6</button>
         <button class="fb" onclick="clsF('Class 7',this)">Class 7</button>
         <button class="fb" onclick="clsF('Class 8',this)">Class 8</button>
@@ -156,42 +169,32 @@
       <div id="student-list"></div>
     </div>
 
+    <!-- PAYMENT SCREEN -->
     <div id="s-payment" class="screen">
       <div class="card card-body">
-        <div style="font-weight:600;margin-bottom:12px;font-size:15px"><i class="ti ti-plus" style="color:var(--green)"></i> Collect New Payment</div>
+        <div style="font-weight:700;margin-bottom:14px;font-size:16px"><i class="ti ti-plus" style="color:var(--green)"></i> Collect New Payment</div>
         <div class="form-group"><label>Select Student</label><select id="ps" class="form-control" onchange="pSel(this.value)"></select></div>
-        <div id="pay-info" style="display:none;background:var(--bg);padding:12px;border-radius:var(--radius-sm);margin-bottom:16px;border:1px dashed var(--border)">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-            <div>Monthly Fee: <strong id="pi-fee">0</strong></div>
-            <div>Total Generated: <strong id="pi-gen">0</strong></div>
-            <div>Total Paid: <strong id="pi-paid" style="color:var(--green)">0</strong></div>
-            <div>Current Due: <strong id="pi-due" style="color:var(--red)">0</strong></div>
-          </div>
-        </div>
         <div class="form-group"><label>Amount (TK)</label><input type="number" id="pa" class="form-control" placeholder="e.g. 1000"></div>
-        <div class="form-group"><label>Note / Reference</label><input type="text" id="pn" class="form-control" placeholder="e.g. Jan Fee / Admission"></div>
-        <button class="btn btn-primary" onclick="doPayment()"><i class="ti ti-check"></i> Submit Payment</button>
+        <div class="form-group"><label>Note / Reference</label><input type="text" id="pn" class="form-control" placeholder="e.g. Monthly Fee"></div>
+        <button class="btn btn-pay" style="width:100%" onclick="doPayment()"><i class="ti ti-check"></i> Submit Payment</button>
       </div>
-      <div class="sec-title">All Dynamic Cash History</div>
-      <div id="pay-hist"></div>
     </div>
 
+    <!-- REGISTER SCREEN -->
     <div id="s-register" class="screen">
       <div class="card card-body">
-        <div id="reg-title" style="font-weight:600;margin-bottom:16px;font-size:15px"><i class="ti ti-user-plus"></i> New student registration</div>
+        <div id="reg-title" style="font-weight:700;margin-bottom:16px;font-size:16px"><i class="ti ti-user-plus"></i> Register New Student</div>
         <input type="hidden" id="edit-id">
         <div class="form-group"><label>Student Name *</label><input type="text" id="rn" class="form-control" placeholder="Full name"></div>
         <div class="form-group"><label>Class / Batch *</label><select id="rc" class="form-control"><option value="">— select —</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option></select></div>
         <div class="form-group"><label>Monthly Fee (TK) *</label><input type="number" id="rf" class="form-control" placeholder="Amount per month"></div>
         <div class="form-group"><label>Phone Number</label><input type="tel" id="rph" class="form-control" placeholder="01xxx-xxxxxx"></div>
-        <div style="display:flex;gap:10px">
-          <button id="reg-submit-btn" class="btn btn-primary" onclick="doRegister()"><i class="ti ti-user-check"></i> Add student</button>
-          <button id="reg-cancel-btn" class="btn btn-ghost" onclick="resetRegForm();goScreen('students',document.querySelectorAll('.bnb')[1])" style="display:none;width:auto">Cancel</button>
-        </div>
+        <button class="btn btn-pay" style="width:100%" onclick="doRegister()"><i class="ti ti-user-check"></i> Add Student</button>
       </div>
     </div>
   </div>
 
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bnb">
     <button class="bnb-btn on" onclick="goScreen('dashboard',this)"><i class="ti ti-smart-home"></i>Dashboard</button>
     <button class="bnb-btn" onclick="goScreen('students',this)"><i class="ti ti-users"></i>Students</button>
@@ -199,14 +202,15 @@
     <button class="bnb-btn" onclick="goScreen('register',this)"><i class="ti ti-user-plus"></i>Register</button>
   </nav>
 
+  <!-- LEDGER MODAL LAYER -->
   <div id="modal-bd" class="modal" onclick="closeMod(event)">
     <div class="modal-content">
-      <div class="modal-h"><div class="modal-t" id="modal-title">Student Ledger</div><button class="btn btn-sm btn-ghost" onclick="closeMod(null,true)" style="padding:4px"><i class="ti ti-x" style="font-size:18px"></i></button></div>
+      <div class="modal-h"><div class="modal-t" id="modal-title">Student Ledger</div><button class="btn btn-sm" onclick="closeMod(null,true)"><i class="ti ti-x"></i></button></div>
       <div id="modal-body"></div>
     </div>
   </div>
 
-  <div id="toast" class="toast"><i class="ti ti-circle-check" style="color:#22c55e;font-size:18px"></i><span id="tmsg">Done</span></div>
+  <div id="toast" class="toast"><span id="tmsg">Done</span></div>
 
   <script>
     const SUPABASE_URL = 'https://ihegxlhqppawbwgsgytq.supabase.co';
@@ -217,173 +221,107 @@
     let clf = 'all', sq = '';
     const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    function setSyncStatus(ok, txt){
-      document.getElementById('sync-dot').className = 'cloud-dot' + (ok ? '' : ' offline');
-      document.getElementById('sync-label').textContent = txt;
-    }
-
     async function fetchCloud(){
-      setSyncStatus(true,'Syncing…');
       try {
         const {data,error} = await _sb.from('coaching_students').select('*').order('id',{ascending:true});
         if(error) throw error;
         SS = data || [];
-        setSyncStatus(true,'Live ✓');
-        hideSyncMsg();
+        document.getElementById('sync-dot').className = 'cloud-dot';
+        document.getElementById('sync-label').textContent = 'Live ✓';
       } catch(e){
-        setSyncStatus(false,'Offline');
-        showSyncMsg('Cloud sync failed — data may be outdated','error');
-        const local = localStorage.getItem('cp_s_bak');
-        if(local) SS = JSON.parse(local);
+        document.getElementById('sync-dot').className = 'cloud-dot offline';
+        document.getElementById('sync-label').textContent = 'Offline';
       }
-      rDash(); rStudents(); rPayHist(); rPaySel();
+      rDash(); rStudents(); rPaySel();
     }
-
-    function backupLocal(){ try{localStorage.setItem('cp_s_bak',JSON.stringify(SS))}catch(e){} }
-
-    function showSyncMsg(msg, type=''){
-      const el=document.getElementById('sync-msg');
-      el.innerHTML=`<i class="ti ti-${type==='error'?'wifi-off':'cloud-check'}"></i> ${msg}`;
-      el.className='sync-banner'+(type?' '+type:'');
-      el.style.display='flex';
-    }
-    function hideSyncMsg(){ document.getElementById('sync-msg').style.display='none'; }
 
     function toast(m){
-      const t=document.getElementById('toast');
-      document.getElementById('tmsg').textContent=m;
-      t.classList.add('on');
-      setTimeout(()=>t.classList.remove('on'),2500);
+      const t=document.getElementById('toast'); document.getElementById('tmsg').textContent=m;
+      t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2500);
     }
+    
     function ini(n){return n.trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?'}
     function fmt(n){return '৳'+Math.round(n).toLocaleString()}
 
     function getStudentStats(s) {
       const fee = parseFloat(s.fee || 0);
       const payments = s.payments || {};
-      let paidTotal = 0;
-      let dueTotal = 0;
+      let paidTotal = 0; let dueTotal = 0;
+      let pCount = 0; let dCount = 0; let naCount = 0;
 
       MONTHS.forEach(m => {
         const st = payments[m];
-        if (st === 'paid') {
-          paidTotal += fee;
-        } else if (st === 'na') {
-          // Do nothing
-        } else if (st !== undefined && st !== null && !isNaN(parseFloat(st))) {
-          const partialVal = parseFloat(st);
-          paidTotal += partialVal;
-          dueTotal += (fee - partialVal);
-        } else { 
-          dueTotal += fee;
-        }
+        if (st === 'paid') { paidTotal += fee; pCount++; }
+        else if (st === 'na') { naCount++; }
+        else { dueTotal += fee; dCount++; }
       });
-
-      return { paid: paidTotal, due: dueTotal, gen: paidTotal + dueTotal };
+      return { paid: paidTotal, due: dueTotal, gen: paidTotal + dueTotal, pCount, dCount, naCount };
     }
-
-    function sGen(s){ return getStudentStats(s).gen; }
-    function sPaid(s){ return getStudentStats(s).paid; }
-    function sDue(s){ return getStudentStats(s).due; }
 
     function goScreen(name,btn){
       document.querySelectorAll('.screen').forEach(el=>el.classList.remove('on'));
       document.querySelectorAll('.bnb-btn').forEach(el=>el.classList.remove('on'));
       document.getElementById('s-'+name).classList.add('on');
       btn.classList.add('on');
-      closeMod(null,true);
-      if(name==='dashboard')rDash();
-      if(name==='students')rStudents();
-      if(name==='payment'){rPaySel();rPayHist();}
+      if(name=='dashboard') rDash();
+      if(name=='students') rStudents();
+      if(name=='payment') rPaySel();
     }
 
     function rDash(){
       document.getElementById('k-students').textContent=SS.length;
-      const totalPaid=SS.reduce((a,s)=>a+sPaid(s),0);
-      const totalDue=SS.reduce((a,s)=>a+sDue(s),0);
+      let totalPaid=SS.reduce((a,s)=>a+getStudentStats(s).paid,0);
+      let totalDue=SS.reduce((a,s)=>a+getStudentStats(s).due,0);
       document.getElementById('k-cash').textContent=fmt(totalPaid);
       document.getElementById('k-due').textContent=fmt(totalDue);
-      document.getElementById('k-month').textContent=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
-
-      const ck=document.getElementById('class-kpi'); ck.innerHTML='';
-      let any=false;
-      ['Class 6','Class 7','Class 8','Class 9','Class 10'].forEach(c=>{
-        const arr=SS.filter(s=>s.class===c); if(!arr.length)return; any=true;
-        const d=document.createElement('div'); d.className='stat-card';
-        d.innerHTML=`<div class="stat-info"><div class="lbl">${c}</div><div class="val blue">${arr.length}<span style="font-size:13px;font-weight:400"> students</span></div></div><div class="stat-icon icon-blue"><i class="ti ti-book"></i></div>`;
-        ck.appendChild(d);
-      });
-      if(!any) ck.innerHTML='<p style="font-size:13px;color:var(--text2)">No students enrolled yet</p>';
-
-      const rp=document.getElementById('dash-recent');
-      let recent=[];
-      SS.forEach(s=>{
-        if(s.payment_logs && s.payment_logs.length){
-          s.payment_logs.forEach(log=>recent.push({...log,student:s}));
-        }
-      });
-      recent.sort((a,b)=>new Date(b.date)-new Date(a.date));
-      recent=recent.slice(0,5);
-      if(!recent.length){rp.innerHTML='<div class="empty"><i class="ti ti-receipt"></i><div class="empty-txt">No payments yet</div></div>';return;}
-      rp.innerHTML=recent.map(p=>`<div class="rec-row">
-        <div class="av av-sm">${ini(p.student.name)}</div>
-        <div class="si"><div class="sn" style="font-size:13px">${p.student.name}</div><div class="sm">${p.date}</div></div>
-        <span class="pill pill-green">+${fmt(p.amount)}</span>
-      </div>`).join('');
-      backupLocal();
-    }
-
-    function generateMonthsHtml(s) {
-      const payments = s.payments || {};
-      return MONTHS.map(m => {
-        const st = payments[m];
-        let cls = 'month-due';
-        let label = m;
-        let subtext = '';
-
-        if (st === 'paid') { cls = 'month-paid'; }
-        else if (st === 'na') { cls = 'month-na'; }
-        else if (st !== undefined && st !== null && !isNaN(parseFloat(st))) {
-          cls = 'month-partial';
-          subtext = `<span class="month-subtext">${fmt(parseFloat(st))}</span>`;
-        }
-        return `<button class="month-btn ${cls}" onclick="toggleMonth(${s.id},'${m}')">${label}${subtext}</button>`;
-      }).join('');
     }
 
     function rStudents(){
       const el=document.getElementById('student-list');
       let list=SS;
       if(clf!=='all') list=list.filter(s=>s.class===clf);
-      if(sq) list=list.filter(s=>s.name.toLowerCase().includes(sq)||(s.phone||'').includes(sq));
-      if(!list.length){el.innerHTML=`<div class="empty"><i class="ti ti-users"></i><div class="empty-txt">No students found</div></div>`;return;}
+      if(sq) list=list.filter(s=>s.name.toLowerCase().includes(sq) || (s.phone && s.phone.includes(sq)));
+      
+      if(!list.length){el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3)">No students found</div>`;return;}
+      
       el.innerHTML=list.map(s=>{
-        const due=sDue(s), paid=sPaid(s), gen=sGen(s);
-        const pct=gen>0?Math.round((paid/gen)*100):0;
-        const barCls=due>0?'bad':'ok';
-        
-        return `<div class="card" style="margin-bottom:10px">
-          <div class="card-row" style="align-items:flex-start">
-            <div class="av" style="margin-top:2px">${ini(s.name)}</div>
+        const stat = getStudentStats(s);
+        const isPaidUp = stat.due <= 0;
+        return `<div class="card">
+          <div class="card-row">
+            <div class="av">${ini(s.name)}</div>
             <div class="si">
-              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;justify-content:between;width:100%">
                 <span class="sn">${s.name}</span>
                 <span class="pill pill-blue">${s.class}</span>
-                ${due>0?`<span class="pill pill-red">Due ${fmt(due)}</span>`:`<span class="pill pill-green">Paid up</span>`}
+                ${isPaidUp ? '<span class="pill pill-green">Paid up</span>' : `<span class="pill pill-red">Due ${fmt(stat.due)}</span>`}
               </div>
-              <div class="sm" style="margin-top:3px">${fmt(s.fee)}/month${s.phone&&s.phone!=='N/A'?' · '+s.phone:''}</div>
-              <div class="months-wrap"><div class="months-grid">${generateMonthsHtml(s)}</div></div>
-              <div class="prog-wrap">
-                <div class="prog-bg"><div class="prog-fill ${barCls}" style="width:${pct}%"></div></div>
-                <div class="prog-lbl">${fmt(paid)} of ${fmt(gen)} · ${pct}%</div>
+              <div class="sm">${fmt(s.fee)}/month · ${s.phone || 'No Phone'}</div>
+              
+              <div class="status-lbl">Month status (tap to toggle)</div>
+              <div class="months-grid">
+                ${MONTHS.map(m => {
+                  const st = (s.payments || {})[m] || 'due';
+                  let cls = 'month-due';
+                  if (st === 'paid') cls = 'month-paid';
+                  if (st === 'na') cls = 'month-na';
+                  return `<button class="month-btn ${cls}" onclick="toggleMonth(${s.id},'${m}')">${m}</button>`;
+                }).join('')}
+              </div>
+              
+              <div class="ind-row">
+                <span class="ind ind-p">${stat.pCount} paid</span>
+                <span class="ind ind-d">${stat.dCount} due</span>
+                <span class="ind ind-n">${stat.naCount} N/A</span>
               </div>
             </div>
           </div>
-          <div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface2)">
-            <button class="btn btn-sm" style="flex:1;background:var(--brand-50);color:var(--brand-800);border-color:transparent" onclick="openLedger(${s.id})"><i class="ti ti-receipt"></i> Ledger</button>
-            <button class="btn btn-sm btn-success" style="flex:1" onclick="qPay(${s.id})"><i class="ti ti-plus"></i> Pay</button>
-            <button class="btn btn-sm" style="background:var(--amber-50);color:var(--amber-800);border-color:transparent" onclick="editStudent(${s.id})"><i class="ti ti-pencil"></i></button>
-            <button class="btn btn-sm btn-danger" onclick="delS(${s.id})"><i class="ti ti-trash"></i></button>
+          <div class="card-footer-info">${fmt(stat.paid)} collected · ${fmt(stat.due)} due · ${Math.round((stat.paid/(stat.gen||1))*100)}%</div>
+          <div class="action-bar">
+            <button class="btn btn-ledger" onclick="openLedger(${s.id})"><i class="ti ti-receipt"></i> Ledger</button>
+            <button class="btn btn-pay" onclick="qPay(${s.id})"><i class="ti ti-plus"></i> Pay</button>
+            <button class="btn btn-edit" onclick="editS(${s.id})"><i class="ti ti-edit"></i></button>
+            <button class="btn btn-del" onclick="delS(${s.id})"><i class="ti ti-trash"></i></button>
           </div>
         </div>`;
       }).join('');
@@ -395,293 +333,101 @@
     async function toggleMonth(dbId, month){
       const s=SS.find(x=>x.id===dbId); if(!s)return;
       const cur=(s.payments||{})[month]||'due';
-      let next = 'due';
-      if (cur === 'due' || !isNaN(parseFloat(cur))) next = 'paid';
-      else if (cur === 'paid') next = 'na';
-      else if (cur === 'na') next = 'due';
-
-      const updated={...(s.payments||{})};
-      updated[month]=next;
+      let next='paid'; if(cur==='paid') next='na'; else if(cur==='na') next='due';
+      const updated={...(s.payments||{})}; updated[month]=next;
       try{
         await _sb.from('coaching_students').update({payments:updated}).eq('id',dbId);
-        s.payments=updated;
-        rStudents(); rDash();
-        if(document.getElementById('modal-bd').classList.contains('on')) openLedger(dbId);
-        toast(month+' → '+ (typeof next==='string'?next.toUpperCase():fmt(next)));
+        s.payments=updated; rStudents(); rDash(); toast(month+' updated!');
       }catch(e){toast('Update failed')}
     }
 
-    async function delS(id){
-      if(!confirm('Delete this student from cloud?'))return;
-      try{
-        await _sb.from('coaching_students').delete().eq('id',id);
-        SS=SS.filter(s=>s.id!==id);
-        rStudents(); rDash(); rPaySel();
-        toast('Student deleted');
-      }catch(e){toast('Delete failed')}
+    /* Fixed Clean Payment Core - Anti Double Multi-Entry Logic */
+    async function doPayment(){
+      const id=document.getElementById('ps').value;
+      const amt=parseFloat(document.getElementById('pa').value);
+      const note=document.getElementById('pn').value || 'Monthly Fee';
+      if(!id||isNaN(amt)||amt<=0) return;
+
+      const s=SS.find(x=>x.id==id); if(!s)return;
+      
+      // ১০০০ টাকার সিঙ্গেল এন্ট্রি তৈরি
+      const newLog = { date: new Date().toISOString().split('T')[0], amount: amt, note: note };
+      const updatedLogs = [...(s.payment_logs||[]), newLog];
+      
+      // সেই অনুযায়ী মাসের বকেয়া কমানো
+      const updatedPayments = { ...(s.payments||{}) };
+      let amountLeft = amt;
+      const monthlyFee = parseFloat(s.fee || 0);
+
+      for (let m of MONTHS) {
+        const curStatus = updatedPayments[m] || 'due';
+        if (curStatus === 'due' && amountLeft >= monthlyFee) {
+          updatedPayments[m] = 'paid';
+          amountLeft -= monthlyFee;
+        }
+        if (amountLeft < monthlyFee) break;
+      }
+
+      try {
+        await _sb.from('coaching_students').update({ payment_logs: updatedLogs, payments: updatedPayments }).eq('id', id);
+        s.payment_logs = updatedLogs; s.payments = updatedPayments;
+        document.getElementById('pa').value = ''; document.getElementById('pn').value = '';
+        toast('Payment Recorded Cleanly!');
+        goScreen('students', document.querySelectorAll('.bnb-btn')[1]);
+      } catch(e) {
+        toast('Payment failed');
+      }
     }
 
     function openLedger(id){
       const s=SS.find(x=>x.id===id); if(!s)return;
-      const gen=sGen(s), paid=sPaid(s), due=sDue(s);
-      const pct=gen>0?Math.round((paid/gen)*100):0;
       const logs=s.payment_logs||[];
-
+      const stat=getStudentStats(s);
       document.getElementById('modal-title').textContent=s.name;
       document.getElementById('modal-body').innerHTML=`
-        <div class="ledger-hero">
-          <div class="ledger-av">${ini(s.name)}</div>
-          <div>
-            <div class="ledger-name">${s.name}</div>
-            <div class="ledger-meta">${s.class} · ${fmt(s.fee)}/month</div>
-          </div>
-        </div>
         <div class="sum3">
-          <div class="sum-box"><div class="sum-lbl">Generated</div><div class="sum-val" style="color:var(--brand)">${fmt(gen)}</div></div>
-          <div class="sum-box"><div class="sum-lbl">Collected</div><div class="sum-val" style="color:var(--green)">${fmt(paid)}</div></div>
-          <div class="sum-box"><div class="sum-lbl">Due</div><div class="sum-val" style="color:var(--red)">${fmt(due)}</div></div>
+          <div class="sum-box"><div class="sum-lbl">Generated</div><div class="sum-val" style="color:blue">${fmt(stat.gen)}</div></div>
+          <div class="sum-box"><div class="sum-lbl">Collected</div><div class="sum-val" style="color:var(--green)">${fmt(stat.paid)}</div></div>
+          <div class="sum-box"><div class="sum-lbl">Due</div><div class="sum-val" style="color:var(--red)">${fmt(stat.due)}</div></div>
         </div>
-        <div style="margin-bottom:12px">
-          <div class="prog-bg" style="height:6px"><div class="prog-fill ${due>0?'bad':'ok'}" style="width:${pct}%"></div></div>
-          <div class="prog-lbl" style="margin-bottom:10px">${pct}% paid</div>
-        </div>
-        <div class="sec" style="font-size:11px;margin-bottom:6px"><i class="ti ti-calendar"></i> Toggle Months status</div>
-        <div class="months-wrap" style="margin-bottom:16px"><div class="months-grid">${generateMonthsHtml(s)}</div></div>
-        
-        <div class="sec" style="font-size:11px;margin-bottom:6px"><i class="ti ti-receipt"></i> Cash History</div>
-        ${logs.length===0
-          ?'<div class="empty" style="padding:20px 0"><i class="ti ti-receipt"></i><div class="empty-txt">No payments recorded yet</div></div>'
-          :`<div style="overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border);overflow:hidden;max-height:180px">
-            <table class="ledger-tbl">
-              <thead><tr><th>Date</th><th>Amount</th><th style="text-align:right">Action</th></tr></thead>
-              <tbody>${[...logs].reverse().map((p, index) => {
-                const realIndex = logs.length - 1 - index;
-                return `<tr>
-                  <td style="font-size:13px">${p.date}</td>
-                  <td><span class="pill pill-green">+${fmt(p.amount)}</span></td>
-                  <td style="text-align:right">
-                    <button class="btn btn-sm btn-danger" style="padding: 0 8px; height: 26px;" onclick="deletePaymentLog(${s.id}, ${realIndex})">
-                      <i class="ti ti-trash" style="font-size:14px"></i>
-                    </button>
-                  </td>
-                </tr>`;
-              }).join('')}</tbody>
-            </table>
-          </div>`
-        }
-        <div style="margin-top:16px;display:flex;gap:10px">
-          <button class="btn btn-success" onclick="closeMod(null,true);qPay(${id})"><i class="ti ti-plus"></i> Add payment</button>
-          <button class="btn btn-ghost" onclick="closeMod(null,true)" style="width:auto;padding:0 16px">Close</button>
-        </div>`;
+        <table class="ledger-tbl">
+          <thead><tr><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+          <tbody>
+            ${logs.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:var(--text3)">No records</td></tr>' : 
+            logs.map((p,idx)=>`<tr><td>${p.date}</td><td style="color:var(--green);font-weight:700">+${fmt(p.amount)}</td><td><button class="btn btn-sm btn-del" onclick="delLog(${s.id},${idx})"><i class="ti ti-trash"></i></button></td></tr>`).join('')}
+          </tbody>
+        </table>`;
       document.getElementById('modal-bd').classList.add('on');
-      document.body.style.overflow='hidden';
     }
 
-    async function deletePaymentLog(studentId, logIndex) {
-      const s = SS.find(x => x.id === studentId);
-      if (!s || !s.payment_logs) return;
-      
-      const logToDelete = s.payment_logs[logIndex];
-      if (!logToDelete) return;
-
-      if (!confirm("আপনি কি নিশ্চিত যে এই পেমেন্ট হিস্ট্রিটি চিরতরে ডিলিট করতে চান?")) return;
-
-      const updatedLogs = [...s.payment_logs];
-      updatedLogs.splice(logIndex, 1);
-
-      const updatedPayments = { ...(s.payments || {}) };
-      
-      let matchedMonth = null;
-      if (logToDelete.note) {
-        MONTHS.forEach(m => {
-          if (logToDelete.note.toLowerCase().includes(m.toLowerCase())) {
-            matchedMonth = m;
-          }
-        });
-      }
-
-      if (!matchedMonth) {
-        for (let i = MONTHS.length - 1; i >= 0; i--) {
-          if (updatedPayments[MONTHS[i]] === 'paid') {
-            matchedMonth = MONTHS[i];
-            break;
-          }
-        }
-      }
-
-      if (matchedMonth) {
-        if (updatedPayments[matchedMonth] === 'paid') {
-          updatedPayments[matchedMonth] = 'due';
-        }
-      }
-
-      try {
-        setSyncStatus(false, 'Updating Cloud…');
-        const { error } = await _sb.from('coaching_students')
-          .update({ payment_logs: updatedLogs, payments: updatedPayments })
-          .eq('id', studentId);
-          
-        if (error) throw error;
-
-        s.payment_logs = updatedLogs;
-        s.payments = updatedPayments;
-        
-        toast("পেমেন্ট ডিলিট এবং ব্যালেন্স অ্যাডজাস্ট হয়েছে!");
-        rDash(); rStudents(); rPayHist();
-        
-        if (document.getElementById('modal-bd').classList.contains('on')) {
-          openLedger(studentId);
-        } else {
-          const pSelEl = document.getElementById('ps');
-          if (pSelEl && pSelEl.value == studentId) pSel(studentId);
-        }
-      } catch (e) {
-        toast("ডিলিট করতে সমস্যা হয়েছে!");
-        setSyncStatus(true, 'Live ✓');
-      }
-    }
-
-    function closeMod(e,force){
-      if(force||!e||e.target===document.getElementById('modal-bd')){
-        document.getElementById('modal-bd').classList.remove('on');
-        document.body.style.overflow='';
-      }
-    }
-
-    function rPaySel(){
-      const s=document.getElementById('ps');
-      s.innerHTML='<option value="">— choose student —</option>'+SS.map(x=>`<option value="${x.id}">${x.name} (${x.class})</option>`).join('');
-    }
-
-    function pSel(id){
-      const div=document.getElementById('pay-info');
-      if(!id){div.style.display='none';return;}
-      const s=SS.find(x=>x.id==id); if(!s){div.style.display='none';return;}
-      div.style.display='block';
-      document.getElementById('pi-fee').textContent=fmt(s.fee);
-      document.getElementById('pi-gen').textContent=fmt(sGen(s));
-      document.getElementById('pi-paid').textContent=fmt(sPaid(s));
-      document.getElementById('pi-due').textContent=fmt(sDue(s));
-    }
-
-    async function doPayment(){
-      const id=document.getElementById('ps').value;
-      const amt=parseFloat(document.getElementById('pa').value);
-      const note=document.getElementById('pn').value;
-      if(!id||isNaN(amt)||amt<=0){toast('Enter valid student and amount');return;}
-      
-      const s=SS.find(x=>x.id==id); if(!s)return;
-      const logs=s.payment_logs||[];
-      const newLog={date:new Date().toISOString().split('T')[0],amount:amt,note:note||'Payment'};
-      const updatedLogs=[...logs,newLog];
-
-      const updatedPayments = { ...(s.payments || {}) };
-      let matchedMonth = null;
-      if (note) {
-        MONTHS.forEach(m => {
-          if (note.toLowerCase().includes(m.toLowerCase())) matchedMonth = m;
-        });
-      }
-      if (!matchedMonth) {
-        for (let m of MONTHS) {
-          if (!updatedPayments[m] || updatedPayments[m] === 'due') {
-            matchedMonth = m;
-            break;
-          }
-        }
-      }
-      if (matchedMonth && updatedPayments[matchedMonth] !== 'na') {
-        updatedPayments[matchedMonth] = 'paid';
-      }
-
+    async function delLog(sid, idx){
+      if(!confirm("Are you sure to delete this payment history?")) return;
+      const s=SS.find(x=>x.id===sid); if(!s) return;
+      const logs=[...s.payment_logs]; logs.splice(idx,1);
       try{
-        await _sb.from('coaching_students').update({payment_logs:updatedLogs, payments:updatedPayments}).eq('id',id);
-        s.payment_logs=updatedLogs;
-        s.payments=updatedPayments;
-        document.getElementById('pa').value=''; document.getElementById('pn').value='';
-        pSel(id); rDash(); rPayHist(); toast('Payment recorded');
-      }catch(e){toast('Payment failed')}
+        await _sb.from('coaching_students').update({payment_logs:logs}).eq('id',sid);
+        s.payment_logs=logs; toast('Log Deleted'); closeMod(null,true); rStudents(); rDash();
+      }catch(e){toast('Failed')}
     }
 
-    function qPay(id){
-      goScreen('payment',document.querySelectorAll('.bnb-btn')[2]);
-      document.getElementById('ps').value=id; pSel(id);
-    }
-
-    function rPayHist(){
-      const el=document.getElementById('pay-hist');
-      let arr=[];
-      SS.forEach(s=>{
-        if(s.payment_logs) s.payment_logs.forEach((l, idx)=>arr.push({...l, sName:s.name, sClass:s.class, sId:s.id, realIdx:idx}));
-      });
-      arr.sort((a,b)=>new Date(b.date)-new Date(a.date));
-      if(!arr.length){el.innerHTML='<div class="empty"><i class="ti ti-receipt"></i><div class="empty-txt">No payment history</div></div>';return;}
-      
-      el.innerHTML=arr.map(p=>`<div class="card card-body" style="margin-bottom:8px;padding:12px">
-        <div style="display:flex;justify-content:between;align-items:center;width:100%">
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:14px">${p.sName} <span style="font-size:11px;color:var(--text2);font-weight:normal">${p.sClass}</span></div>
-            <div style="font-size:12px;color:var(--text3);margin-top:2px">${p.date} · ${p.note}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <span class="pill pill-green" style="font-size:13px;padding:4px 10px">+${fmt(p.amount)}</span>
-            <button class="btn btn-sm btn-danger" style="padding:0 8px; height:28px; width:auto;" onclick="deletePaymentLog(${p.sId}, ${p.realIdx})">
-              <i class="ti ti-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>`).join('');
-    }
+    function closeMod(e,force){ if(force||e.target===document.getElementById('modal-bd')) document.getElementById('modal-bd').classList.remove('on'); }
+    function rPaySel(){ document.getElementById('ps').innerHTML='<option value="">— select —</option>'+SS.map(x=>`<option value="${x.id}">${x.name}</option>`).join(''); }
+    function pSel(id){}
+    function qPay(id){ goScreen('payment',document.querySelectorAll('.bnb-btn')[2]); document.getElementById('ps').value=id; }
 
     async function doRegister(){
-      const id=document.getElementById('edit-id').value;
-      const name=document.getElementById('rn').value.trim();
-      const cls=document.getElementById('rc').value;
-      const fee=parseFloat(document.getElementById('rf').value);
-      const ph=document.getElementById('rph').value.trim()||'N/A';
-
-      if(!name||!cls||isNaN(fee)){toast('Fill all required fields');return;}
-
-      if(id){
-        try{
-          const s=SS.find(x=>x.id==id);
-          const payload={name,class:cls,fee,phone:ph};
-          await _sb.from('coaching_students').update(payload).eq('id',id);
-          Object.assign(s,payload);
-          resetRegForm(); goScreen('students',document.querySelectorAll('.bnb-btn')[1]); toast('Student updated');
-        }catch(e){toast('Update failed')}
-      }else{
-        try{
-          const payload={name,class:cls,fee,phone:ph,payments:{},payment_logs:[]};
-          const {data,error}=await _sb.from('coaching_students').insert([payload]).select();
-          if(error)throw error;
-          if(data&&data[0]) SS.push(data[0]);
-          resetRegForm(); goScreen('dashboard',document.querySelectorAll('.bnb-btn')[0]); toast('Student registered');
-        }catch(e){toast('Registration failed')}
-      }
+      const name=document.getElementById('rn').value; const cls=document.getElementById('rc').value;
+      const fee=parseFloat(document.getElementById('rf').value); const ph=document.getElementById('rph').value;
+      if(!name||!cls||isNaN(fee)) return;
+      try{
+        const {data}=await _sb.from('coaching_students').insert([{name, class:cls, fee, phone:ph, payments:{}, payment_logs:[]}]).select();
+        if(data) SS.push(data[0]);
+        document.getElementById('rn').value=''; document.getElementById('rf').value=''; document.getElementById('rph').value='';
+        toast('Registered!'); goScreen('students',document.querySelectorAll('.bnb-btn')[1]);
+      }catch(e){toast('Failed')}
     }
 
-    function editStudent(id){
-      const s=SS.find(x=>x.id===id); if(!s)return;
-      goScreen('register',document.querySelectorAll('.bnb-btn')[3]);
-      document.getElementById('edit-id').value=s.id;
-      document.getElementById('rn').value=s.name;
-      document.getElementById('rc').value=s.class;
-      document.getElementById('rf').value=s.fee;
-      document.getElementById('rph').value=s.phone==='N/A'?'':s.phone;
-      document.getElementById('reg-title').innerHTML='<i class="ti ti-pencil"></i> Edit student information';
-      document.getElementById('reg-submit-btn').innerHTML='<i class="ti ti-check"></i> Update student';
-      document.getElementById('reg-cancel-btn').style.display='inline-flex';
-    }
-
-    function resetRegForm(){
-      document.getElementById('edit-id').value='';
-      document.getElementById('rn').value=''; document.getElementById('rc').value='';
-      document.getElementById('rf').value=''; document.getElementById('rph').value='';
-      document.getElementById('reg-title').innerHTML='<i class="ti ti-user-plus"></i> New student registration';
-      document.getElementById('reg-submit-btn').innerHTML='<i class="ti ti-user-check"></i> Add student';
-      document.getElementById('reg-cancel-btn').style.display='none';
-    }
+    function delS(id){ if(confirm('Delete Student completely?')) _sb.from('coaching_students').delete().eq('id',id).then(()=>{SS=SS.filter(x=>x.id!==id);rStudents();rDash();}); }
 
     window.addEventListener('DOMContentLoaded', fetchCloud);
   </script>
