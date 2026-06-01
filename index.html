@@ -229,16 +229,16 @@
     function ini(n){return n.trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?'}
     function fmt(n){return '৳'+Math.round(n).toLocaleString()}
 
-    /* সম্পূর্ণ রি-ডিজাইনড মেগা গাণিতিক ইঞ্জিন */
+    /* অ্যান্টি-ক্র্যাশ সেফটি সহ গাণিতিক ইঞ্জিন */
     function getStudentStats(s) {
       const fee = parseFloat(s.fee || 0);
-      const payments = s.payments || {};
-      const logs = s.payment_logs || [];
       
-      // ১. আসল Collected টাকা শুধুমাত্র ট্রানজেকশন খাতা থেকে আসবে
+      // অবজেক্ট প্রোটেকশন যাতে ডাটাবেজের উল্টাপাল্টা ডাটাতে ক্র্যাশ না করে
+      const payments = s.payments && typeof s.payments === 'object' ? s.payments : {};
+      const logs = Array.isArray(s.payment_logs) ? s.payment_logs : [];
+      
       let paidTotal = logs.reduce((sum, log) => sum + parseFloat(log.amount || 0), 0);
       
-      // ২. একটিভ মাসগুলোর সংখ্যা বের করা (যা N/A নয়)
       let pCount = 0; let dCount = 0; let naCount = 0;
       MONTHS.forEach(m => {
         const st = payments[m] || 'due';
@@ -247,11 +247,9 @@
         else dCount++;
       });
 
-      // ৩. Total Generated = (Active Months) * Monthly Fee
       let activeMonthsCount = pCount + dCount;
       let genTotal = activeMonthsCount * fee;
       
-      // ৪. নিখুঁত Due হিসাব ফর্মুলা
       let dueTotal = genTotal - paidTotal;
       if(dueTotal < 0) dueTotal = 0; 
 
@@ -287,6 +285,8 @@
       el.innerHTML=list.map(s=>{
         const stat = getStudentStats(s);
         const isPaidUp = stat.due <= 0;
+        const sPayments = s.payments && typeof s.payments === 'object' ? s.payments : {};
+        
         return `<div class="card">
           <div class="card-row">
             <div class="av">${ini(s.name)}</div>
@@ -303,7 +303,7 @@
               <div class="status-lbl">Month status (tap to toggle)</div>
               <div class="months-grid">
                 ${MONTHS.map(m => {
-                  const st = (s.payments || {})[m] || 'due';
+                  const st = sPayments[m] || 'due';
                   let cls = 'month-due';
                   if (st === 'paid') cls = 'month-paid';
                   if (st === 'na') cls = 'month-na';
@@ -334,9 +334,10 @@
 
     async function toggleMonth(dbId, month){
       const s=SS.find(x=>x.id===dbId); if(!s)return;
-      const cur=(s.payments||{})[month]||'due';
+      const sPayments = s.payments && typeof s.payments === 'object' ? s.payments : {};
+      const cur=sPayments[month]||'due';
       let next='paid'; if(cur==='paid') next='na'; else if(cur==='na') next='due';
-      const updated={...(s.payments||{})}; updated[month]=next;
+      const updated={...sPayments}; updated[month]=next;
       try{
         await _sb.from('coaching_students').update({payments:updated}).eq('id',dbId);
         s.payments=updated; rStudents(); rDash(); toast(month+' status updated');
@@ -350,9 +351,10 @@
       if(!id||isNaN(amt)||amt<=0) return;
 
       const s=SS.find(x=>x.id==id); if(!s)return;
+      const sLogs = Array.isArray(s.payment_logs) ? s.payment_logs : [];
       
       const newLog = { date: new Date().toISOString().split('T')[0], amount: amt, note: note };
-      const updatedLogs = [...(s.payment_logs||[]), newLog];
+      const updatedLogs = [...sLogs, newLog];
 
       try {
         await _sb.from('coaching_students').update({ payment_logs: updatedLogs }).eq('id', id);
@@ -367,7 +369,7 @@
 
     function openLedger(id){
       const s=SS.find(x=>x.id===id); if(!s)return;
-      const logs=s.payment_logs||[];
+      const logs = Array.isArray(s.payment_logs) ? s.payment_logs : [];
       const stat=getStudentStats(s);
       document.getElementById('modal-title').textContent=s.name;
       document.getElementById('modal-body').innerHTML=`
@@ -389,7 +391,8 @@
     async function delLog(sid, idx){
       if(!confirm("Delete this transaction?")) return;
       const s=SS.find(x=>x.id===sid); if(!s) return;
-      const logs=[...s.payment_logs]; logs.splice(idx,1);
+      const logs = Array.isArray(s.payment_logs) ? [...s.payment_logs] : [];
+      logs.splice(idx,1);
       try{
         await _sb.from('coaching_students').update({payment_logs:logs}).eq('id',sid);
         s.payment_logs=logs; toast('Transaction Deleted'); closeMod(null,true); rStudents(); rDash();
@@ -430,4 +433,17 @@
         }catch(e){toast('Failed')}
       } else {
         try{
-          const {data}=await _sb.from('coaching_students').insert(
+          const {data}=await _sb.from('coaching_students').insert([{name, class:cls, fee, phone:ph, payments:{}, payment_logs:[]}]).select();
+          if(data) SS.push(data[0]);
+          document.getElementById('rn').value=''; document.getElementById('rf').value=''; document.getElementById('rph').value='';
+          toast('Registered Successfully!'); goScreen('students',document.querySelectorAll('.bnb-btn')[1]);
+        }catch(e){toast('Failed')}
+      }
+    }
+
+    function delS(id){ if(confirm('Delete student completely?')) _sb.from('coaching_students').delete().eq('id',id).then(()=>{SS=SS.filter(x=>x.id!==id);rStudents();rDash(); toast('Deleted');}); }
+
+    window.addEventListener('DOMContentLoaded', fetchCloud);
+  </script>
+</body>
+</html>
