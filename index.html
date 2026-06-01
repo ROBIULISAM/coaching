@@ -51,7 +51,7 @@
     
     .status-lbl { font-size: 12px; font-weight: 600; color: var(--text2); margin-top: 12px; margin-bottom: 6px; }
     .months-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 8px; }
-    .month-btn { padding: 8px 0; border-radius: 6px; border: none; font-size: 12px; font-weight: 700; text-align: center; color: white; }
+    .month-btn { padding: 8px 0; border-radius: 6px; border: none; font-size: 12px; font-weight: 700; text-align: center; color: white; cursor: pointer; transition: background 0.2s; }
     .month-paid { background: var(--green); }
     .month-due { background: var(--red); }
     .month-na { background: var(--gray-btn); }
@@ -132,6 +132,7 @@
 
   <div class="container">
     
+    <!-- DASHBOARD SCREEN -->
     <div id="s-dashboard" class="screen on">
       <div class="kpi-grid">
         <div class="stat-card">
@@ -146,6 +147,7 @@
       </div>
     </div>
 
+    <!-- STUDENTS SCREEN -->
     <div id="s-students" class="screen">
       <div class="search-box"><i class="ti ti-search"></i><input type="text" class="form-control" placeholder="Search name or phone..." oninput="srch(this.value)"></div>
       <div class="filter-row">
@@ -159,6 +161,7 @@
       <div id="student-list"></div>
     </div>
 
+    <!-- PAYMENT SCREEN -->
     <div id="s-payment" class="screen">
       <div class="card card-body">
         <div style="font-weight:700;margin-bottom:14px;font-size:16px;color:var(--green)"><i class="ti ti-plus"></i> Collect New Payment</div>
@@ -169,6 +172,7 @@
       </div>
     </div>
 
+    <!-- REGISTER SCREEN -->
     <div id="s-register" class="screen">
       <div class="card card-body">
         <div id="reg-title" style="font-weight:700;margin-bottom:16px;font-size:16px;color:var(--accent)"><i class="ti ti-user-plus"></i> Register New Student</div>
@@ -182,6 +186,7 @@
     </div>
   </div>
 
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bnb">
     <button class="bnb-btn on" onclick="goScreen('dashboard',this)"><i class="ti ti-smart-home"></i>Dashboard</button>
     <button class="bnb-btn" onclick="goScreen('students',this)"><i class="ti ti-users"></i>Students</button>
@@ -189,6 +194,7 @@
     <button class="bnb-btn" onclick="goScreen('register',this)"><i class="ti ti-user-plus"></i>Register</button>
   </nav>
 
+  <!-- LEDGER MODAL LAYER -->
   <div id="modal-bd" class="modal" onclick="closeMod(event)">
     <div class="modal-content">
       <div class="modal-h"><div class="modal-t" id="modal-title">Student Ledger</div><button class="btn btn-sm" onclick="closeMod(null,true)" style="background:transparent; border:none;"><i class="ti ti-x" style="font-size:20px"></i></button></div>
@@ -235,57 +241,85 @@
     function ini(n){return (n || '??').trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?'}
     function fmt(n){return '৳'+Math.round(n || 0).toLocaleString()}
 
+    // মেইন ক্যালকুলেশন মেকানিজম (ট্যাব সিস্টেমের উপর ভিত্তি করে তৈরি)
     function getStudentStats(s) {
       const fee = parseFloat(s.fee || 0);
       const logs = safeParse(s.payment_logs, []);
+      
+      // ডাটাবেজ থেকে স্টুডেন্টের ম্যানুয়াল মাসের কনফিগারেশন নেওয়া (ডিফল্ট সব 'due')
+      const config = safeParse(s.payments, {});
       
       let paidTotal = 0;
       if(Array.isArray(logs)){
         paidTotal = logs.reduce((sum, log) => sum + parseFloat(log.amount || 0), 0);
       }
       
-      // চলতি মাস (জুন) পর্যন্ত কয়টি মাস অতিক্রান্ত হয়েছে তার অটোমেটিক হিসাব
-      const currentMonthIndex = new Date().getMonth(); // জুন = ৫
-      const totalActiveMonths = currentMonthIndex + 1; // মোট ৬ মাস (Jan to Jun)
-      
-      // মোট জেনারেটেড ফি
-      const genTotal = totalActiveMonths * fee;
-      
-      // কয়টি মাসের ফি সম্পূর্ণ ক্লিয়ার হয়েছে তা লেজারের টাকা থেকে অটোমেটিক বের করা
-      let tempPaid = paidTotal;
       let pCount = 0;
       let dCount = 0;
+      let naCount = 0;
+      let calculatedDue = 0;
+      let calculatedGen = 0;
       
       const monthStatus = {};
       
-      for(let i = 0; i < 12; i++) {
-        const m = MONTHS[i];
-        if (i <= currentMonthIndex) {
-          if (tempPaid >= fee) {
-            monthStatus[m] = 'paid';
-            pCount++;
-            tempPaid -= fee;
-          } else {
-            monthStatus[m] = 'due';
-            dCount++;
-          }
-        } else {
+      MONTHS.forEach(m => {
+        // ডাটাবেজে আগে থেকে সেভ থাকা স্টেটাস চেক করা
+        let currentStatus = config[m] || 'due';
+        
+        if (currentStatus === 'na') {
           monthStatus[m] = 'na';
+          naCount++;
+        } else if (currentStatus === 'paid') {
+          monthStatus[m] = 'paid';
+          pCount++;
+          calculatedGen += fee;
+        } else {
+          monthStatus[m] = 'due';
+          dCount++;
+          calculatedGen += fee;
         }
-      }
+      });
 
-      let dueTotal = genTotal - paidTotal;
-      if(dueTotal < 0) dueTotal = 0; 
+      // আসল বকেয়া = (যে মাসগুলো পড়েছে তার মোট ফি) - (লেজারে জমা হওয়া মোট টাকা)
+      calculatedDue = calculatedGen - paidTotal;
+      if (calculatedDue < 0) calculatedDue = 0;
 
       return { 
         paid: paidTotal, 
-        due: dueTotal, 
-        gen: genTotal, 
+        due: calculatedDue, 
+        gen: calculatedGen, 
         pCount, 
         dCount, 
-        naCount: 12 - (pCount + dCount),
+        naCount,
         monthStatus 
       };
+    }
+
+    // বাটন ক্লিক করে মাসের স্টেটাস পরিবর্তন করার ফাংশন (Toggle System)
+    async function toggleMonth(studentId, month) {
+      const s = SS.find(x => x.id === studentId);
+      if (!s) return;
+      
+      const config = safeParse(s.payments, {});
+      const current = config[month] || 'due';
+      
+      let nextStatus = 'due';
+      if (current === 'due') nextStatus = 'paid';
+      else if (current === 'paid') nextStatus = 'na';
+      else if (current === 'na') nextStatus = 'due';
+      
+      config[month] = nextStatus;
+      
+      try {
+        // সাথে সাথে ক্লাউড ডাটাবেজে সেভ হবে
+        await _sb.from('coaching_students').update({ payments: config }).eq('id', studentId);
+        s.payments = config;
+        rStudents();
+        rDash();
+        toast(`${month} status marked as ${nextStatus.toUpperCase()}`);
+      } catch (e) {
+        toast('Failed to update month');
+      }
     }
 
     function goScreen(name,btn){
@@ -331,21 +365,21 @@
               </div>
               <div class="sm">${fmt(s.fee)}/month · ${s.phone || 'No Phone'}</div>
               
-              <div class="status-lbl">Month status (Auto-calculated from payments)</div>
+              <div class="status-lbl">Month status (Click to toggle: Due ➔ Paid ➔ N/A)</div>
               <div class="months-grid">
                 ${MONTHS.map(m => {
                   const st = stat.monthStatus[m] || 'due';
                   let cls = 'month-due';
                   if (st === 'paid') cls = 'month-paid';
                   if (st === 'na') cls = 'month-na';
-                  return `<button class="month-btn ${cls}" style="pointer-events:none;">${m}</button>`;
+                  return `<button class="month-btn ${cls}" onclick="toggleMonth(${s.id}, '${m}')">${m}</button>`;
                 }).join('')}
               </div>
               
               <div class="ind-row">
                 <span class="ind ind-p">${stat.pCount} paid</span>
                 <span class="ind ind-d">${stat.dCount} due</span>
-                <span class="ind ind-n">${stat.naCount} upcoming</span>
+                <span class="ind ind-n">${stat.naCount} skipped/NA</span>
               </div>
             </div>
           </div>
@@ -393,7 +427,7 @@
       document.getElementById('modal-title').textContent=s.name;
       document.getElementById('modal-body').innerHTML=`
         <div class="sum3">
-          <div class="sum-box"><div class="sum-lbl">Generated</div><div class="sum-val" style="color:#2563eb">${fmt(stat.gen)}</div></div>
+          <div class="sum-box"><div class="sum-lbl">Target</div><div class="sum-val" style="color:#2563eb">${fmt(stat.gen)}</div></div>
           <div class="sum-box"><div class="sum-lbl">Collected</div><div class="sum-val" style="color:var(--green)">${fmt(stat.paid)}</div></div>
           <div class="sum-box"><div class="sum-lbl">Due</div><div class="sum-val" style="color:var(--red)">${fmt(stat.due)}</div></div>
         </div>
