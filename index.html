@@ -7,117 +7,110 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <style>
     :root {
-      --bg: #f8fafc; --surface: #ffffff; --surface2: #f1f5f9; --border: #e2e8f0;
-      --text: #0f172a; --text2: #475569; --text3: #94a3b8;
-      --brand: #0f172a; --brand-light: #1e293b; --accent: #2563eb;
-      --green: #10b981; --red: #ef4444; --gray-btn: #94a3b8;
-      --radius: 16px; --radius-sm: 8px;
+      --bg: #f4f6f9; 
+      --surface: #ffffff;
+      --surface2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text2: #64748b;
+      --text3: #94a3b8;
+      --brand: #0f172a;
+      --accent: #2563eb;
+      --green: #10b981;
+      --red: #ef4444;
+      --gray-btn: #94a3b8;
+      --radius: 20px;
+      --radius-sm: 10px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 85px; }
     
-    /* Premium Header Matching image_422de4.png */
-    header { background: var(--brand); padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    header { background: #131926; padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center; }
     .logo-block { display: flex; align-items: center; gap: 10px; }
-    .logo-icon { background: #3b82f6; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
-    .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
-    .logo-sub { font-size: 11px; color: #94a3b8; margin-top: 1px; }
-    .sync-badge { background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 20px; font-size: 11px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.1); }
-    .cloud-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #10b981; }
-    .cloud-dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); }
+    .logo-icon { background: #3b82f6; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+    .logo-text { font-size: 18px; font-weight: 700; color: #fff; }
+    .logo-sub { font-size: 11px; color: #94a3b8; }
+    .sync-badge { background: rgba(16, 185, 129, 0.1); padding: 5px 12px; border-radius: 20px; font-size: 12px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(16, 185, 129, 0.2); color: #34d399; }
+    .cloud-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; }
 
-    .container { max-width: 500px; margin: 0 auto; padding: 16px; }
+    .container { max-width: 500px; margin: 0 auto; padding: 14px; }
     .screen { display: none; } .screen.on { display: block; }
     
-    /* Styled Cards Matching image_422de4.png */
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .card-body { padding: 16px; }
     .card-row { display: flex; gap: 14px; padding: 16px; }
-    .av { width: 46px; height: 46px; background: #eff6ff; color: #1e40af; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    .av { width: 44px; height: 44px; background: #eff6ff; color: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
     .si { flex: 1; min-width: 0; }
-    .sn { font-weight: 700; font-size: 16px; color: var(--text); }
-    .sm { font-size: 13px; color: var(--text2); margin-top: 3px; }
+    .sn { font-weight: 700; font-size: 16px; color: #1e293b; }
+    .sm { font-size: 13px; color: var(--text2); margin-top: 2px; }
     
-    /* Badges */
     .pill { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-left: 6px; }
-    .pill-blue { background: #eff6ff; color: #1e40af; }
+    .pill-blue { background: #eff6ff; color: #2563eb; }
     .pill-green { background: #d1fae5; color: #065f46; }
     .pill-red { background: #fee2e2; color: #991b1b; }
     
-    /* Custom Grid Layout for Months status (tap to toggle) */
-    .status-lbl { font-size: 12px; font-weight: 600; color: var(--text2); margin-top: 10px; margin-bottom: 6px; }
+    .status-lbl { font-size: 12px; font-weight: 600; color: var(--text2); margin-top: 12px; margin-bottom: 6px; }
     .months-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 8px; }
-    .month-btn { padding: 6px 0; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; color: white; transition: opacity 0.2s; }
+    .month-btn { padding: 8px 0; border-radius: 6px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; color: white; }
     .month-paid { background: var(--green); }
     .month-due { background: var(--red); }
     .month-na { background: var(--gray-btn); }
     
-    /* Summary row indicators */
-    .ind-row { display: flex; gap: 10px; font-size: 11px; color: var(--text2); font-weight: 500; margin-bottom: 8px; }
+    .ind-row { display: flex; gap: 10px; font-size: 12px; color: var(--text2); font-weight: 500; margin-bottom: 4px; }
     .ind { display: inline-flex; align-items: center; gap: 4px; }
     .ind::before { content:''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .ind-p::before { background: var(--green); }
     .ind-d::before { background: var(--red); }
     .ind-n::before { background: var(--gray-btn); }
 
-    .card-footer-info { text-align: right; font-size: 12px; color: var(--text3); padding: 0 16px 12px 0; font-weight: 500; }
+    .card-footer-info { text-align: right; font-size: 12px; color: var(--text2); padding: 8px 16px; background: #f8fafc; border-top: 1px solid var(--border); font-weight: 500; }
     
-    /* Footer Buttons Matching image_422de4.png */
     .action-bar { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); background: #f8fafc; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; }
-    .btn-sm { padding: 8px 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: white; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn-pay { background: var(--green); color: white; border-color: var(--green); flex: 2; }
     .btn-ledger { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; flex: 1.5; }
-    .btn-edit { background: #fffbeb; color: #d97706; border-color: #fde68a; width: 40px; padding: 0; }
-    .btn-del { background: #fef2f2; color: var(--red); border-color: #fca5a5; width: 40px; padding: 0; }
+    .btn-edit { background: #fffbeb; color: #d97706; border-color: #fde68a; width: 42px; padding: 0; }
+    .btn-del { background: #fef2f2; color: var(--red); border-color: #fca5a5; width: 42px; padding: 0; }
     
-    /* Inputs Styling */
     .search-box { position: relative; margin-bottom: 16px; }
     .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 18px; }
-    .form-control { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; outline: none; transition: border 0.2s; }
-    .search-box input { padding-left: 42px; border-radius: var(--radius-sm); }
-    .form-control:focus { border-color: #3b82f6; }
+    .form-control { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: white; outline: none; color: var(--text); }
+    .search-box input { padding-left: 42px; border-radius: 25px; border: 1px solid #cbd5e1; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
 
-    /* Filter Row Component */
-    .filter-row { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; scrollbar-width: none; }
-    .filter-row::-webkit-scrollbar { display: none; }
-    .fb { padding: 6px 16px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; white-space: nowrap; }
+    .filter-row { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; }
+    .fb { padding: 6px 16px; border-radius: 20px; background: white; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; white-space: nowrap; }
     .fb.on { background: #0f172a; color: white; border-color: #0f172a; }
 
-    /* KPI Layout */
     .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-    .stat-info .lbl { font-size: 12px; color: var(--text3); font-weight: 600; text-transform: uppercase; }
-    .stat-info .val { font-size: 20px; font-weight: 800; margin-top: 4px; }
+    .stat-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+    .stat-info .lbl { font-size: 11px; color: var(--text2); font-weight: 600; text-transform: uppercase; }
+    .stat-info .val { font-size: 22px; font-weight: 800; margin-top: 4px; }
     .stat-info .val.blue { color: #2563eb; } .stat-info .val.green { color: var(--green); } .stat-info .val.red { color: var(--red); }
-    .stat-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 20px; }
     
-    /* Navigation Bar */
-    .bnb { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; height: 65px; z-index: 100; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
+    .bnb { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); display: flex; height: 65px; z-index: 500; }
     .bnb-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text2); font-size: 11px; font-weight: 500; gap: 4px; cursor: pointer; }
     .bnb-btn.on { color: #2563eb; font-weight: 700; }
     .bnb-btn i { font-size: 22px; }
 
-    /* Popups / Ledger Modal */
-    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); display: flex; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .modal.on { opacity: 1; pointer-events: auto; }
-    .modal-content { background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius) var(--radius) 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.2s; max-height: 85vh; overflow-y: auto; }
+    .modal-content { background: white; width: 100%; max-width: 500px; border-radius: var(--radius) var(--radius) 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.2s; max-height: 85vh; overflow-y: auto; }
     .modal.on .modal-content { transform: translateY(0); }
     .modal-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .modal-t { font-size: 18px; font-weight: 700; }
     
     .sum3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .sum-box { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; text-align: center; }
-    .sum-lbl { font-size: 11px; color: var(--text3); font-weight: 600; }
+    .sum-box { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; text-align: center; background: #f8fafc; }
+    .sum-lbl { font-size: 11px; color: var(--text2); font-weight: 600; }
     .sum-val { font-size: 14px; font-weight: 700; margin-top: 4px; }
     
     .ledger-tbl { width: 100%; border-collapse: collapse; text-align: left; }
     .ledger-tbl th { font-size: 12px; font-weight: 600; color: var(--text2); padding: 10px; background: var(--surface2); }
     .ledger-tbl td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
 
-    .toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -100%); background: #0f172a; color: white; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.2); pointer-events: none; }
+    .toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -100%); background: #0f172a; color: white; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 2000; pointer-events: none; }
     .toast.on { transform: translate(-50%, 0); opacity: 1; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -152,7 +145,6 @@
       <div class="stat-card" style="margin-bottom:16px">
         <div class="stat-info"><div class="lbl">Total Outstanding Due</div><div id="k-due" class="val red" style="font-size:24px">৳0</div></div>
       </div>
-      <div id="class-kpi" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
     </div>
 
     <!-- STUDENTS SCREEN -->
@@ -172,8 +164,8 @@
     <!-- PAYMENT SCREEN -->
     <div id="s-payment" class="screen">
       <div class="card card-body">
-        <div style="font-weight:700;margin-bottom:14px;font-size:16px"><i class="ti ti-plus" style="color:var(--green)"></i> Collect New Payment</div>
-        <div class="form-group"><label>Select Student</label><select id="ps" class="form-control" onchange="pSel(this.value)"></select></div>
+        <div style="font-weight:700;margin-bottom:14px;font-size:16px;color:var(--green)"><i class="ti ti-plus"></i> Collect New Payment</div>
+        <div class="form-group"><label>Select Student</label><select id="ps" class="form-control"></select></div>
         <div class="form-group"><label>Amount (TK)</label><input type="number" id="pa" class="form-control" placeholder="e.g. 1000"></div>
         <div class="form-group"><label>Note / Reference</label><input type="text" id="pn" class="form-control" placeholder="e.g. Monthly Fee"></div>
         <button class="btn btn-pay" style="width:100%" onclick="doPayment()"><i class="ti ti-check"></i> Submit Payment</button>
@@ -183,13 +175,13 @@
     <!-- REGISTER SCREEN -->
     <div id="s-register" class="screen">
       <div class="card card-body">
-        <div id="reg-title" style="font-weight:700;margin-bottom:16px;font-size:16px"><i class="ti ti-user-plus"></i> Register New Student</div>
+        <div id="reg-title" style="font-weight:700;margin-bottom:16px;font-size:16px;color:var(--accent)"><i class="ti ti-user-plus"></i> Register New Student</div>
         <input type="hidden" id="edit-id">
         <div class="form-group"><label>Student Name *</label><input type="text" id="rn" class="form-control" placeholder="Full name"></div>
         <div class="form-group"><label>Class / Batch *</label><select id="rc" class="form-control"><option value="">— select —</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option></select></div>
         <div class="form-group"><label>Monthly Fee (TK) *</label><input type="number" id="rf" class="form-control" placeholder="Amount per month"></div>
         <div class="form-group"><label>Phone Number</label><input type="tel" id="rph" class="form-control" placeholder="01xxx-xxxxxx"></div>
-        <button class="btn btn-pay" style="width:100%" onclick="doRegister()"><i class="ti ti-user-check"></i> Add Student</button>
+        <button class="btn btn-pay" style="width:100%; background:var(--accent); border-color:var(--accent);" onclick="doRegister()"><i class="ti ti-user-check"></i> Save Student</button>
       </div>
     </div>
   </div>
@@ -205,7 +197,7 @@
   <!-- LEDGER MODAL LAYER -->
   <div id="modal-bd" class="modal" onclick="closeMod(event)">
     <div class="modal-content">
-      <div class="modal-h"><div class="modal-t" id="modal-title">Student Ledger</div><button class="btn btn-sm" onclick="closeMod(null,true)"><i class="ti ti-x"></i></button></div>
+      <div class="modal-h"><div class="modal-t" id="modal-title">Student Ledger</div><button class="btn btn-sm" onclick="closeMod(null,true)" style="background:transparent; border:none;"><i class="ti ti-x" style="font-size:20px"></i></button></div>
       <div id="modal-body"></div>
     </div>
   </div>
@@ -226,10 +218,10 @@
         const {data,error} = await _sb.from('coaching_students').select('*').order('id',{ascending:true});
         if(error) throw error;
         SS = data || [];
-        document.getElementById('sync-dot').className = 'cloud-dot';
+        document.getElementById('sync-dot').style.background = '#10b981';
         document.getElementById('sync-label').textContent = 'Live ✓';
       } catch(e){
-        document.getElementById('sync-dot').className = 'cloud-dot offline';
+        document.getElementById('sync-dot').style.background = '#ef4444';
         document.getElementById('sync-label').textContent = 'Offline';
       }
       rDash(); rStudents(); rPaySel();
@@ -243,19 +235,32 @@
     function ini(n){return n.trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?'}
     function fmt(n){return '৳'+Math.round(n).toLocaleString()}
 
+    /* ফিক্সড গাণিতিক হিসাব ইঞ্জিন */
     function getStudentStats(s) {
       const fee = parseFloat(s.fee || 0);
       const payments = s.payments || {};
-      let paidTotal = 0; let dueTotal = 0;
+      const logs = s.payment_logs || [];
+      
+      // ১. আসল Collected টাকা শুধুমাত্র লেনদেনের খাতা (payment_logs) থেকে আসবে।
+      let paidTotal = logs.reduce((sum, log) => sum + parseFloat(log.amount || 0), 0);
+      
+      // ২. একটিভ মাসের সংখ্যা গণনা (যা আপনি ম্যানুয়ালি ক্লিক করে সিলেক্ট করে রেখেছেন)
       let pCount = 0; let dCount = 0; let naCount = 0;
-
       MONTHS.forEach(m => {
-        const st = payments[m];
-        if (st === 'paid') { paidTotal += fee; pCount++; }
-        else if (st === 'na') { naCount++; }
-        else { dueTotal += fee; dCount++; }
+        const st = payments[m] || 'due';
+        if (st === 'paid') pCount++;
+        else if (st === 'na') naCount++;
+        else dCount++;
       });
-      return { paid: paidTotal, due: dueTotal, gen: paidTotal + dueTotal, pCount, dCount, naCount };
+
+      // ৩. Total Generated / Payable = (Paid মাস + Due মাস) * মাসিক ফি। (N/A মাসগুলো বাদ)
+      let genTotal = (pCount + dCount) * fee;
+      
+      // ৪. নিখুঁত ফর্মুলা: Due = ৩২০০ (মোট দাবি) - ১০০০০ (মোট জমা) = ২২০০ টাকা। 
+      let dueTotal = genTotal - paidTotal;
+      if(dueTotal < 0) dueTotal = 0; 
+
+      return { paid: paidTotal, due: dueTotal, gen: genTotal, pCount, dCount, naCount };
     }
 
     function goScreen(name,btn){
@@ -291,10 +296,12 @@
           <div class="card-row">
             <div class="av">${ini(s.name)}</div>
             <div class="si">
-              <div style="display:flex;align-items:center;justify-content:between;width:100%">
-                <span class="sn">${s.name}</span>
-                <span class="pill pill-blue">${s.class}</span>
-                ${isPaidUp ? '<span class="pill pill-green">Paid up</span>' : `<span class="pill pill-red">Due ${fmt(stat.due)}</span>`}
+              <div style="display:flex;align-items:center;justify-content:between;width:100%;flex-wrap:wrap;gap:4px">
+                <span class="sn" style="flex:1">${s.name}</span>
+                <div>
+                  <span class="pill pill-blue">${s.class}</span>
+                  ${isPaidUp ? '<span class="pill pill-green">Paid up</span>' : `<span class="pill pill-red">Due ${fmt(stat.due)}</span>`}
+                </div>
               </div>
               <div class="sm">${fmt(s.fee)}/month · ${s.phone || 'No Phone'}</div>
               
@@ -316,7 +323,7 @@
               </div>
             </div>
           </div>
-          <div class="card-footer-info">${fmt(stat.paid)} collected · ${fmt(stat.due)} due · ${Math.round((stat.paid/(stat.gen||1))*100)}%</div>
+          <div class="card-footer-info">${fmt(stat.paid)} collected · ${fmt(stat.due)} outstanding due</div>
           <div class="action-bar">
             <button class="btn btn-ledger" onclick="openLedger(${s.id})"><i class="ti ti-receipt"></i> Ledger</button>
             <button class="btn btn-pay" onclick="qPay(${s.id})"><i class="ti ti-plus"></i> Pay</button>
@@ -337,11 +344,10 @@
       const updated={...(s.payments||{})}; updated[month]=next;
       try{
         await _sb.from('coaching_students').update({payments:updated}).eq('id',dbId);
-        s.payments=updated; rStudents(); rDash(); toast(month+' updated!');
+        s.payments=updated; rStudents(); rDash(); toast(month+' updated');
       }catch(e){toast('Update failed')}
     }
 
-    /* Fixed Clean Payment Core - Anti Double Multi-Entry Logic */
     async function doPayment(){
       const id=document.getElementById('ps').value;
       const amt=parseFloat(document.getElementById('pa').value);
@@ -350,29 +356,14 @@
 
       const s=SS.find(x=>x.id==id); if(!s)return;
       
-      // ১০০০ টাকার সিঙ্গেল এন্ট্রি তৈরি
       const newLog = { date: new Date().toISOString().split('T')[0], amount: amt, note: note };
       const updatedLogs = [...(s.payment_logs||[]), newLog];
-      
-      // সেই অনুযায়ী মাসের বকেয়া কমানো
-      const updatedPayments = { ...(s.payments||{}) };
-      let amountLeft = amt;
-      const monthlyFee = parseFloat(s.fee || 0);
-
-      for (let m of MONTHS) {
-        const curStatus = updatedPayments[m] || 'due';
-        if (curStatus === 'due' && amountLeft >= monthlyFee) {
-          updatedPayments[m] = 'paid';
-          amountLeft -= monthlyFee;
-        }
-        if (amountLeft < monthlyFee) break;
-      }
 
       try {
-        await _sb.from('coaching_students').update({ payment_logs: updatedLogs, payments: updatedPayments }).eq('id', id);
-        s.payment_logs = updatedLogs; s.payments = updatedPayments;
+        await _sb.from('coaching_students').update({ payment_logs: updatedLogs }).eq('id', id);
+        s.payment_logs = updatedLogs;
         document.getElementById('pa').value = ''; document.getElementById('pn').value = '';
-        toast('Payment Recorded Cleanly!');
+        toast('৳' + amt + ' Subtracted From Due Successfully!');
         goScreen('students', document.querySelectorAll('.bnb-btn')[1]);
       } catch(e) {
         toast('Payment failed');
@@ -386,48 +377,73 @@
       document.getElementById('modal-title').textContent=s.name;
       document.getElementById('modal-body').innerHTML=`
         <div class="sum3">
-          <div class="sum-box"><div class="sum-lbl">Generated</div><div class="sum-val" style="color:blue">${fmt(stat.gen)}</div></div>
+          <div class="sum-box"><div class="sum-lbl">Generated</div><div class="sum-val" style="color:#2563eb">${fmt(stat.gen)}</div></div>
           <div class="sum-box"><div class="sum-lbl">Collected</div><div class="sum-val" style="color:var(--green)">${fmt(stat.paid)}</div></div>
           <div class="sum-box"><div class="sum-lbl">Due</div><div class="sum-val" style="color:var(--red)">${fmt(stat.due)}</div></div>
         </div>
         <table class="ledger-tbl">
-          <thead><tr><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+          <thead><tr><th>Date</th><th>Amount</th><th>Note</th><th>Action</th></tr></thead>
           <tbody>
-            ${logs.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:var(--text3)">No records</td></tr>' : 
-            logs.map((p,idx)=>`<tr><td>${p.date}</td><td style="color:var(--green);font-weight:700">+${fmt(p.amount)}</td><td><button class="btn btn-sm btn-del" onclick="delLog(${s.id},${idx})"><i class="ti ti-trash"></i></button></td></tr>`).join('')}
+            ${logs.length === 0 ? '<tr><td colspan="4" style="text-align:center;color:var(--text3)">No records found</td></tr>' : 
+            logs.map((p,idx)=>`<tr><td>${p.date}</td><td style="color:var(--green);font-weight:700">+${fmt(p.amount)}</td><td>${p.note || 'Fee'}</td><td><button class="btn btn-sm btn-del" onclick="delLog(${s.id},${idx})"><i class="ti ti-trash"></i></button></td></tr>`).join('')}
           </tbody>
         </table>`;
       document.getElementById('modal-bd').classList.add('on');
     }
 
     async function delLog(sid, idx){
-      if(!confirm("Are you sure to delete this payment history?")) return;
+      if(!confirm("Delete this transaction?")) return;
       const s=SS.find(x=>x.id===sid); if(!s) return;
       const logs=[...s.payment_logs]; logs.splice(idx,1);
       try{
         await _sb.from('coaching_students').update({payment_logs:logs}).eq('id',sid);
-        s.payment_logs=logs; toast('Log Deleted'); closeMod(null,true); rStudents(); rDash();
+        s.payment_logs=logs; toast('Transaction Deleted'); closeMod(null,true); rStudents(); rDash();
       }catch(e){toast('Failed')}
+    }
+
+    function editS(id){
+      const s=SS.find(x=>x.id===id); if(!s) return;
+      goScreen('register', document.querySelectorAll('.bnb-btn')[3]);
+      document.getElementById('reg-title').innerHTML = `<i class="ti ti-edit"></i> Edit Student Profile`;
+      document.getElementById('edit-id').value = s.id;
+      document.getElementById('rn').value = s.name;
+      document.getElementById('rc').value = s.class;
+      document.getElementById('rf').value = s.fee;
+      document.getElementById('rph').value = s.phone || '';
     }
 
     function closeMod(e,force){ if(force||e.target===document.getElementById('modal-bd')) document.getElementById('modal-bd').classList.remove('on'); }
     function rPaySel(){ document.getElementById('ps').innerHTML='<option value="">— select —</option>'+SS.map(x=>`<option value="${x.id}">${x.name}</option>`).join(''); }
-    function pSel(id){}
     function qPay(id){ goScreen('payment',document.querySelectorAll('.bnb-btn')[2]); document.getElementById('ps').value=id; }
 
     async function doRegister(){
+      const eid=document.getElementById('edit-id').value;
       const name=document.getElementById('rn').value; const cls=document.getElementById('rc').value;
       const fee=parseFloat(document.getElementById('rf').value); const ph=document.getElementById('rph').value;
       if(!name||!cls||isNaN(fee)) return;
-      try{
-        const {data}=await _sb.from('coaching_students').insert([{name, class:cls, fee, phone:ph, payments:{}, payment_logs:[]}]).select();
-        if(data) SS.push(data[0]);
-        document.getElementById('rn').value=''; document.getElementById('rf').value=''; document.getElementById('rph').value='';
-        toast('Registered!'); goScreen('students',document.querySelectorAll('.bnb-btn')[1]);
-      }catch(e){toast('Failed')}
+      
+      if(eid){
+        try{
+          await _sb.from('coaching_students').update({name, class:cls, fee, phone:ph}).eq('id',eid);
+          const s = SS.find(x=>x.id == eid);
+          if(s) { s.name=name; s.class=cls; s.fee=fee; s.phone=ph; }
+          toast('Profile Updated!');
+          document.getElementById('edit-id').value='';
+          document.getElementById('reg-title').innerHTML = `<i class="ti ti-user-plus"></i> Register New Student`;
+          document.getElementById('rn').value=''; document.getElementById('rf').value=''; document.getElementById('rph').value='';
+          goScreen('students',document.querySelectorAll('.bnb-btn')[1]);
+        }catch(e){toast('Failed')}
+      } else {
+        try{
+          const {data}=await _sb.from('coaching_students').insert([{name, class:cls, fee, phone:ph, payments:{}, payment_logs:[]}]).select();
+          if(data) SS.push(data[0]);
+          document.getElementById('rn').value=''; document.getElementById('rf').value=''; document.getElementById('rph').value='';
+          toast('Registered Successfully!'); goScreen('students',document.querySelectorAll('.bnb-btn')[1]);
+        }catch(e){toast('Failed')}
+      }
     }
 
-    function delS(id){ if(confirm('Delete Student completely?')) _sb.from('coaching_students').delete().eq('id',id).then(()=>{SS=SS.filter(x=>x.id!==id);rStudents();rDash();}); }
+    function delS(id){ if(confirm('Delete student completely?')) _sb.from('coaching_students').delete().eq('id',id).then(()=>{SS=SS.filter(x=>x.id!==id);rStudents();rDash(); toast('Deleted');}); }
 
     window.addEventListener('DOMContentLoaded', fetchCloud);
   </script>
