@@ -17,7 +17,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 70px; }
-    header { background: var(--surface); padding: 16px; border-bottom: 1px solid var(--border); sticky: top; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+    header { background: var(--surface); padding: 16px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
     .logo { font-size: 18px; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 8px; }
     .container { max-width: 500px; margin: 0 auto; padding: 16px; }
     .screen { display: none; } .screen.on { display: block; }
@@ -120,7 +120,6 @@
   <div class="container">
     <div id="sync-msg" class="sync-banner"></div>
 
-    <!-- DASHBOARD SCREEN -->
     <div id="s-dashboard" class="screen on">
       <div class="kpi-grid">
         <div class="stat-card">
@@ -144,7 +143,6 @@
       <div class="card card-body" id="dash-recent" style="padding-top:4px;padding-bottom:4px"></div>
     </div>
 
-    <!-- STUDENTS SCREEN -->
     <div id="s-students" class="screen">
       <div class="search-box"><i class="ti ti-search"></i><input type="text" class="form-control" placeholder="Search student name or phone..." oninput="srch(this.value)"></div>
       <div class="filter-row">
@@ -158,7 +156,6 @@
       <div id="student-list"></div>
     </div>
 
-    <!-- PAYMENT SCREEN -->
     <div id="s-payment" class="screen">
       <div class="card card-body">
         <div style="font-weight:600;margin-bottom:12px;font-size:15px"><i class="ti ti-plus" style="color:var(--green)"></i> Collect New Payment</div>
@@ -179,7 +176,6 @@
       <div id="pay-hist"></div>
     </div>
 
-    <!-- REGISTER SCREEN -->
     <div id="s-register" class="screen">
       <div class="card card-body">
         <div id="reg-title" style="font-weight:600;margin-bottom:16px;font-size:15px"><i class="ti ti-user-plus"></i> New student registration</div>
@@ -196,7 +192,6 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION -->
   <nav class="bnb">
     <button class="bnb-btn on" onclick="goScreen('dashboard',this)"><i class="ti ti-smart-home"></i>Dashboard</button>
     <button class="bnb-btn" onclick="goScreen('students',this)"><i class="ti ti-users"></i>Students</button>
@@ -204,7 +199,6 @@
     <button class="bnb-btn" onclick="goScreen('register',this)"><i class="ti ti-user-plus"></i>Register</button>
   </nav>
 
-  <!-- MODAL LAYER -->
   <div id="modal-bd" class="modal" onclick="closeMod(event)">
     <div class="modal-content">
       <div class="modal-h"><div class="modal-t" id="modal-title">Student Ledger</div><button class="btn btn-sm btn-ghost" onclick="closeMod(null,true)" style="padding:4px"><i class="ti ti-x" style="font-size:18px"></i></button></div>
@@ -214,7 +208,6 @@
 
   <div id="toast" class="toast"><i class="ti ti-circle-check" style="color:#22c55e;font-size:18px"></i><span id="tmsg">Done</span></div>
 
-  <!-- ─── JAVASCRIPT LOGIC ───────────────────────────────── -->
   <script>
     const SUPABASE_URL = 'https://ihegxlhqppawbwgsgytq.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZWd4bGhxcHBhd2J3Z3NneXRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjI2MzgsImV4cCI6MjA5NTYzODYzOH0.TklHPf7ARXlABCnuTQYrnQFZ_ZnO4EArofRJ-7JD6RQ';
@@ -295,7 +288,7 @@
 
     function goScreen(name,btn){
       document.querySelectorAll('.screen').forEach(el=>el.classList.remove('on'));
-      document.querySelectorAll('.bnb').forEach(el=>el.classList.remove('on'));
+      document.querySelectorAll('.bnb-btn').forEach(el=>el.classList.remove('on'));
       document.getElementById('s-'+name).classList.add('on');
       btn.classList.add('on');
       closeMod(null,true);
@@ -487,23 +480,64 @@
     async function deletePaymentLog(studentId, logIndex) {
       const s = SS.find(x => x.id === studentId);
       if (!s || !s.payment_logs) return;
+      
+      const logToDelete = s.payment_logs[logIndex];
+      if (!logToDelete) return;
+
       if (!confirm("আপনি কি নিশ্চিত যে এই পেমেন্ট হিস্ট্রিটি চিরতরে ডিলিট করতে চান?")) return;
 
       const updatedLogs = [...s.payment_logs];
       updatedLogs.splice(logIndex, 1);
 
+      const updatedPayments = { ...(s.payments || {}) };
+      
+      let matchedMonth = null;
+      if (logToDelete.note) {
+        MONTHS.forEach(m => {
+          if (logToDelete.note.toLowerCase().includes(m.toLowerCase())) {
+            matchedMonth = m;
+          }
+        });
+      }
+
+      if (!matchedMonth) {
+        for (let i = MONTHS.length - 1; i >= 0; i--) {
+          if (updatedPayments[MONTHS[i]] === 'paid') {
+            matchedMonth = MONTHS[i];
+            break;
+          }
+        }
+      }
+
+      if (matchedMonth) {
+        if (updatedPayments[matchedMonth] === 'paid') {
+          updatedPayments[matchedMonth] = 'due';
+        }
+      }
+
       try {
         setSyncStatus(false, 'Updating Cloud…');
-        const { error } = await _sb.from('coaching_students').update({ payment_logs: updatedLogs }).eq('id', studentId);
+        const { error } = await _sb.from('coaching_students')
+          .update({ payment_logs: updatedLogs, payments: updatedPayments })
+          .eq('id', studentId);
+          
         if (error) throw error;
 
         s.payment_logs = updatedLogs;
-        toast("পেমেন্ট সফলভাবে ডিলিট হয়েছে!");
+        s.payments = updatedPayments;
+        
+        toast("পেমেন্ট ডিলিট এবং ব্যালেন্স অ্যাডজাস্ট হয়েছে!");
         rDash(); rStudents(); rPayHist();
-        openLedger(studentId);
+        
+        if (document.getElementById('modal-bd').classList.contains('on')) {
+          openLedger(studentId);
+        } else {
+          const pSelEl = document.getElementById('ps');
+          if (pSelEl && pSelEl.value == studentId) pSel(studentId);
+        }
       } catch (e) {
         toast("ডিলিট করতে সমস্যা হয়েছে!");
-        setSyncStatus(false, 'Offline');
+        setSyncStatus(true, 'Live ✓');
       }
     }
 
@@ -541,16 +575,36 @@
       const newLog={date:new Date().toISOString().split('T')[0],amount:amt,note:note||'Payment'};
       const updatedLogs=[...logs,newLog];
 
+      const updatedPayments = { ...(s.payments || {}) };
+      let matchedMonth = null;
+      if (note) {
+        MONTHS.forEach(m => {
+          if (note.toLowerCase().includes(m.toLowerCase())) matchedMonth = m;
+        });
+      }
+      if (!matchedMonth) {
+        for (let m of MONTHS) {
+          if (!updatedPayments[m] || updatedPayments[m] === 'due') {
+            matchedMonth = m;
+            break;
+          }
+        }
+      }
+      if (matchedMonth && updatedPayments[matchedMonth] !== 'na') {
+        updatedPayments[matchedMonth] = 'paid';
+      }
+
       try{
-        await _sb.from('coaching_students').update({payment_logs:updatedLogs}).eq('id',id);
+        await _sb.from('coaching_students').update({payment_logs:updatedLogs, payments:updatedPayments}).eq('id',id);
         s.payment_logs=updatedLogs;
+        s.payments=updatedPayments;
         document.getElementById('pa').value=''; document.getElementById('pn').value='';
         pSel(id); rDash(); rPayHist(); toast('Payment recorded');
       }catch(e){toast('Payment failed')}
     }
 
     function qPay(id){
-      goScreen('payment',document.querySelectorAll('.bnb')[2]);
+      goScreen('payment',document.querySelectorAll('.bnb-btn')[2]);
       document.getElementById('ps').value=id; pSel(id);
     }
 
@@ -594,7 +648,7 @@
           const payload={name,class:cls,fee,phone:ph};
           await _sb.from('coaching_students').update(payload).eq('id',id);
           Object.assign(s,payload);
-          resetRegForm(); goScreen('students',document.querySelectorAll('.bnb')[1]); toast('Student updated');
+          resetRegForm(); goScreen('students',document.querySelectorAll('.bnb-btn')[1]); toast('Student updated');
         }catch(e){toast('Update failed')}
       }else{
         try{
@@ -602,14 +656,14 @@
           const {data,error}=await _sb.from('coaching_students').insert([payload]).select();
           if(error)throw error;
           if(data&&data[0]) SS.push(data[0]);
-          resetRegForm(); goScreen('dashboard',document.querySelectorAll('.bnb')[0]); toast('Student registered');
+          resetRegForm(); goScreen('dashboard',document.querySelectorAll('.bnb-btn')[0]); toast('Student registered');
         }catch(e){toast('Registration failed')}
       }
     }
 
     function editStudent(id){
       const s=SS.find(x=>x.id===id); if(!s)return;
-      goScreen('register',document.querySelectorAll('.bnb')[3]);
+      goScreen('register',document.querySelectorAll('.bnb-btn')[3]);
       document.getElementById('edit-id').value=s.id;
       document.getElementById('rn').value=s.name;
       document.getElementById('rc').value=s.class;
